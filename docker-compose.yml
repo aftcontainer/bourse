@@ -1,0 +1,12 @@
+services:
+  mains:
+    container_name: web-app
+    build:
+      context: .
+    restart: always
+    ports:
+      - 8004:8004
+    env_file: .env
+    volumes:
+      - ./mainapp:/bourse/mainapp
+      - .:/bourse

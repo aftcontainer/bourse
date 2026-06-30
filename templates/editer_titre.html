@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Adapt the extends path above if your base lives elsewhere, e.g. "mainapp/base.html" #}
+
+{% block title %}Modifier titre{% endblock %}
+{% block titre_page %}Modifier titre{% endblock %}
+{% block breadcrumb_active %}Modifier titre{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.devise-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.devise-search .form-control { padding-left: 2.75rem; }
+	.devise-search .search-icon {
+		position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+		color: var(--bs-gray-500); pointer-events: none;
+	}
+	.symbole-pill {
+		display: inline-flex; align-items: center; justify-content: center;
+		min-width: 34px; height: 34px; padding: 0 .5rem;
+		border-radius: .65rem; background: var(--bs-light-primary);
+		color: var(--bs-primary); font-weight: 700;
+	}
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+	<!--begin::Form-->
+      <form id='titreForm' method="post" action="{% url 'mainapp:creer_titre' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!--begin::Modal body-->
+        <div class="modal-body py-10 px-lg-12">
+
+           <!--begin::Type de titre-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Type de titre</label>
+              <div class="input-group">
+                 {{ form.type_titre }}
+                 <a href="#" class="btn btn-icon btn-light"
+                    data-bs-toggle="modal" data-bs-target="#kt_modal_type_titre"
+                    title="Gérer les types de titre">
+                    <i class="ki-duotone ki-dots-horizontal fs-2">
+                       <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+                    </i>
+                 </a>
+              </div>
+           </div>
+           <!--end::Type de titre-->
+
+           <!--begin::Libellé-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Libellé</label>
+              {{ form.libelle }}
+           </div>
+           <!--end::Libellé-->
+
+           <!--begin::Devise-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Devise</label>
+              <div class="input-group">
+                 {{ form.devise }}
+                 {# Bouton "..." : ouvre la gestion des devises (modal / page) #}
+                 <a href="#" class="btn btn-icon btn-light"
+                    data-bs-toggle="modal" data-bs-target="#kt_modal_devise"
+                    title="Gérer les devises">
+                    <i class="ki-duotone ki-dots-horizontal fs-2">
+                       <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+                    </i>
+                 </a>
+              </div>
+           </div>
+           <!--end::Devise-->
+
+           <!--begin::Ligne Nominal / Nombre d'actions-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="required fw-semibold fs-6 mb-2">Nominal</label>
+                 {{ form.nominal }}
+              </div>
+              <div class="col-md-6">
+                 <label class="required fw-semibold fs-6 mb-2">Nombre d'actions</label>
+                 {{ form.nb_actions }}
+              </div>
+           </div>
+           <!--end::Ligne Nominal / Nombre d'actions-->
+
+           <!--begin::Ligne Cours action / Minimum souscription-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Cours de l'action</label>
+                 {{ form.cours }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Minimum de souscription</label>
+                 {{ form.nb_mini }}
+              </div>
+           </div>
+           <!--end::Ligne Cours action / Minimum souscription-->
+
+           <!--begin::Ligne Cours obligation / Taux obligation-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Cours de l'obligation</label>
+                 {{ form.cours_oblig }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Taux de l'obligation (%)</label>
+                 {{ form.tx_oblig }}
+              </div>
+           </div>
+           <!--end::Ligne Cours obligation / Taux obligation-->
+
+           <!--begin::Ligne Dates-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Date dernier coupon</label>
+                 {{ form.dercoupon }}
+              </div>
+           </div>
+           <!--end::Ligne Dates-->
+
+           <!--begin::Chemin du logo-->
+           <div class="mb-7">
+              <label class="fw-semibold fs-6 mb-2">Chemin du logo du titre</label>
+              {{ form.logo }}
+           </div>
+           <!--end::Chemin du logo-->
+
+        </div>
+        <!--end::Modal body-->
+
+        <!--begin::Modal footer-->
+        <div class="modal-footer flex-center">
+           <button type="submit" class="btn btn-primary">
+              <span class="indicator-label">Modifier</span>
+           </button>
+        </div>
+        <!--end::Modal footer-->
+
+    </form>
+    <!--end::Form-->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+		<!--end::Global Javascript Bundle-->
+		<!--begin::Vendors Javascript(used for this page only)-->
+		<script src="{% static 'mainapp/plugins/custom/datatables/datatables.bundle.js' %}"></script>
+		<!--end::Vendors Javascript-->
+		<script src="{% static 'mainapp/js/custom/apps/subscriptions/list/list.js' %}"></script>
+		<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/utilities/modals/upgrade-plan.js' %}"></script>
+{% endblock %}
+

@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Adapt the extends path above if your base lives elsewhere, e.g. "mainapp/base.html" #}
+
+{% block title %}Paramètres{% endblock %}
+{% block titre_page %}Paramètres{% endblock %}
+{% block breadcrumb_active %}Paramètres{% endblock %}
+
+{# Page-hub : pas de boutons Filter / Create de démo #}
+{% block toolbar_actions %}{% endblock %}
+
+{% block extra_css %}
+<style>
+	/* --- En-tête --- */
+	.donnees-hero {
+		background: linear-gradient(135deg, #1b1b29 0%, #2b2b46 45%, #7239ea 140%);
+		border-radius: 1rem;
+		overflow: hidden;
+		position: relative;
+	}
+	.donnees-hero::after {
+		content: "";
+		position: absolute;
+		right: -60px;
+		top: -60px;
+		width: 220px;
+		height: 220px;
+		background: radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%);
+		pointer-events: none;
+	}
+
+	/* --- Cartes --- */
+	.donnees-card {
+		border: 1px solid var(--bs-gray-200);
+		border-radius: 1rem;
+		transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+		overflow: hidden;
+		position: relative;
+	}
+	.donnees-card::before {
+		content: "";
+		position: absolute;
+		left: 0; right: 0; top: 0;
+		height: 4px;
+		background: var(--accent, var(--bs-primary));
+		opacity: 0;
+		transition: opacity .25s ease;
+	}
+	.donnees-card:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 1rem 2.25rem rgba(24, 28, 50, .12);
+		border-color: transparent;
+	}
+	.donnees-card:hover::before { opacity: 1; }
+	.donnees-card .symbol-label { transition: transform .25s ease; }
+	.donnees-card:hover .symbol-label { transform: scale(1.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!--begin::En-tête-->
+<div class="donnees-hero d-flex flex-column flex-md-row align-items-md-center justify-content-between p-8 p-lg-10 mb-9">
+	<div class="text-white mb-5 mb-md-0">
+		<h2 class="text-white fw-bold fs-2 mb-2">Paramétrage de l'application</h2>
+		<p class="text-white opacity-75 fs-6 mb-0">Configurez les données de référence utilisées dans toute l'application.</p>
+	</div>
+	<span class="symbol symbol-60px">
+		<span class="symbol-label bg-white bg-opacity-25">
+			<i class="ki-duotone ki-setting-2 fs-2x text-white">
+				<span class="path1"></span>
+				<span class="path2"></span>
+			</i>
+		</span>
+	</span>
+</div>
+<!--end::En-tête-->
+
+<!--begin::Grille des cartes-->
+<div class="row g-6 g-xl-9 justify-content-center">
+
+	<!--begin::Devise-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-primary);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-primary">
+						<i class="ki-duotone ki-credit-cart fs-2x text-primary">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Devise</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Définir les devises et leurs paramètres de conversion.</p>
+				<a href="{% url 'mainapp:liste_devises' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Devise-->
+
+	<!--begin::Qualité-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-check-circle fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Qualité</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Gérer les qualités attribuées aux souscripteurs et actionnaires.</p>
+				<a href="{% url 'mainapp:liste_qualites' %}" class="btn btn-sm btn-light-success fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Qualité-->
+
+	<!--begin::Catégorie de clients-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-info);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-info">
+						<i class="ki-duotone ki-element-11 fs-2x text-info">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Catégorie de clients</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Créer et organiser les catégories de clients.</p>
+				<a href="{% url 'mainapp:liste_cat_clients' %}" class="btn btn-sm btn-light-info fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Catégorie de clients-->
+
+	<!--begin::Libellés comptables-->
+	{% comment %}
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-warning);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-warning">
+						<i class="ki-duotone ki-note fs-2x text-warning">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Libellés comptables</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Paramétrer les libellés utilisés dans les écritures comptables.</p>
+				<a href="#" class="btn btn-sm btn-light-warning fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	{% endcomment %}
+	<!--end::Libellés comptables-->
+
+	<!--begin::Type de versement-->
+	{% comment %}
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-danger);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-danger">
+						<i class="ki-duotone ki-switch fs-2x text-danger">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Type de versement</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Définir les différents types de versement disponibles.</p>
+				<a href="#" class="btn btn-sm btn-light-danger fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	{% endcomment %}
+	<!--end::Type de versement-->
+
+	<!--begin::Opération-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #7239ea;">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label" style="background-color: #f8f5ff;">
+						<i class="ki-duotone ki-setting-2 fs-2x" style="color:#7239ea;">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Opération</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Configurer les types d'opérations traités par l'application.</p>
+				<a href="{% url 'mainapp:liste_t_operations' %}" class="btn btn-sm fw-semibold w-100" style="background-color:#f8f5ff; color:#7239ea;">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Opération-->
+
+	<!--begin::Type de titres-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-primary);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-primary">
+						<i class="ki-duotone ki-shield-tick fs-2x text-primary">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Type de titres</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Paramétrer les catégories de titres (actions, obligations…).</p>
+				<a href="{% url 'mainapp:liste_t_titres' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Type de titres-->
+
+	<!--begin::Titre-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-file-added fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Titre</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Gérer les titres et leurs caractéristiques.</p>
+				<a href="{% url 'mainapp:liste_titres' %}" class="btn btn-sm btn-light-success fw-semibold w-100">
+					Configurer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Titre-->
+
+</div>
+<!--end::Grille des cartes-->
+{% endblock %}

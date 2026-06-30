@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Adapt the extends path above if your base lives elsewhere, e.g. "mainapp/base.html" #}
+
+{% block title %}Nouveau type d'opération{% endblock %}
+{% block titre_page %}Nouveau type d'opération{% endblock %}
+{% block breadcrumb_active %}Nouveau type d'opération{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.devise-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.devise-search .form-control { padding-left: 2.75rem; }
+	.devise-search .search-icon {
+		position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+		color: var(--bs-gray-500); pointer-events: none;
+	}
+	.symbole-pill {
+		display: inline-flex; align-items: center; justify-content: center;
+		min-width: 34px; height: 34px; padding: 0 .5rem;
+		border-radius: .65rem; background: var(--bs-light-primary);
+		color: var(--bs-primary); font-weight: 700;
+	}
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+	<!--begin::Form-->
+      <form id='typeOpeForm' method="post" action="{% url 'mainapp:creer_t_operation' %}">
+        {% csrf_token %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <!--begin::Modal body-->
+        <div class="modal-body py-10 px-lg-12">
+
+           <!--begin::Input Code-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Code</label>
+              {{form.old_id}}
+           </div>
+           <!--end::Input Code-->
+
+           <!--begin::Input Libellé-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Libellé</label>
+              {{form.libelle}}
+           </div>
+           <!--end::Input Libellé-->
+
+           <!--begin::Sens-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2 d-block">Sens</label>
+              {{form.mvnt_operation}}
+           </div>
+           <!--end::Sens-->
+
+           <!--begin::Taux ligne 1-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="required fw-semibold fs-6 mb-2">Taux commission (%)</label>
+                 {{form.commission}}
+              </div>
+              <div class="col-md-6">
+                 <label class="required fw-semibold fs-6 mb-2">Taux IRCM (%)</label>
+                 {{form.rcm}}
+              </div>
+           </div>
+           <!--end::Taux ligne 1-->
+
+           <!--begin::Taux ligne 2-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="required fw-semibold fs-6 mb-2">Taux TVA (%)</label>
+                 {{form.tva}}
+              </div>
+              <div class="col-md-6">
+                 <label class="required fw-semibold fs-6 mb-2">Taux CSS (%)</label>
+                 {{form.css}}
+              </div>
+           </div>
+           <!--end::Taux ligne 2-->
+
+        </div>
+        <!--end::Modal body-->
+
+        <!--begin::Modal footer-->
+        <div class="modal-footer flex-center">
+           <button type="submit" class="btn btn-primary">
+              <span class="indicator-label">Enregistrer</span>
+           </button>
+        </div>
+        <!--end::Modal footer-->
+
+    </form>
+    <!--end::Form-->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+		<!--end::Global Javascript Bundle-->
+		<!--begin::Vendors Javascript(used for this page only)-->
+		<script src="{% static 'mainapp/plugins/custom/datatables/datatables.bundle.js' %}"></script>
+		<!--end::Vendors Javascript-->
+		<script src="{% static 'mainapp/js/custom/apps/subscriptions/list/list.js' %}"></script>
+		<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/utilities/modals/upgrade-plan.js' %}"></script>
+
+		<script src="{% static 'mainapp/plugins/notify-growl/js/rainbow.js' %}"></script>
+		<script src="{% static 'mainapp/plugins/notify-growl/js/sample.js' %}"></script>
+		<script src="{% static 'mainapp/plugins/notify-growl/js/jquery.growl.js' %}"></script>
+		<script src="{% static 'mainapp/plugins/notify-growl/js/notifIt.js' %}"></script>
+
+		<script src="{% static 'mainapp/js/custom/notifications.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/cat_client.js' %}"></script>
+{% endblock %}

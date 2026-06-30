@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nouveau souscripteur{% endblock %}
+{% block titre_page %}Nouveau souscripteur{% endblock %}
+{% block breadcrumb_active %}Nouveau souscripteur{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+	<!--begin::Form-->
+	<form method="post" action="" enctype="multipart/form-data">
+		{% csrf_token %}
+
+		{% if messages %}
+			<ul class="messages mb-6">
+				{% for message in messages %}
+					<li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+		<div class="modal-body py-8 px-lg-10">
+
+			<!--begin::Section 1 — Informations du compte-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">1</span> Informations du compte</div>
+
+				<div class="row mb-7">
+					<div class="col-md-6">
+						<label class="required fw-semibold fs-6 mb-2">Établissement teneur du compte</label>
+						{{ form.banque }}
+					</div>
+					<div class="col-md-6">
+						<label class="fw-semibold fs-6 mb-2">Compte identifiant</label>
+						{{ form.indentifiant }}
+					</div>
+				</div>
+
+				<div class="row mb-7">
+					<div class="col-md-6">
+						<label class="required fw-semibold fs-6 mb-2">Catégorie de client</label>
+						{{ form.category_client }}
+					</div>
+					<div class="col-md-6">
+						<label class="required fw-semibold fs-6 mb-2">Catégorie d'action</label>
+						{{ form.ca_code }}
+					</div>
+				</div>
+
+				<div class="row mb-2">
+					<div class="col-md-6">
+						<label class="fw-semibold fs-6 mb-2">Numéro de compte espèces</label>
+						{{ form.num_compte }}
+					</div>
+					<div class="col-md-6 matri" >
+						<label class="fw-semibold fs-6 mb-2">Matricule salarié</label>
+						{{ form.matricule }}
+					</div>
+				</div>
+			</div>
+			<!--end::Section 1-->
+
+			<!--begin::Section 2 — Identité du souscripteur-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">2</span> Identité du souscripteur</div>
+
+				<div class="row mb-7">
+					<div class="col-md-3">
+						<label class="fw-semibold fs-6 mb-2">Civilité</label>
+						{{ form.qualite }}
+					</div>
+					<div class="col-md-9">
+						<label class="required fw-semibold fs-6 mb-2">Nom ou Raison sociale</label>
+						{{ form.nom_client }}
+					</div>
+				</div>
+
+				<div class="row mb-7">
+					<div class="col-md-12 div_prenom_client">
+						<label class="fw-semibold fs-6 mb-2">Prénoms</label>
+						{{ form.prenom_client }}
+					</div>
+				</div>
+
+				<div class="row mb-2 div_date_naissance">
+					<div class="col-md-4">
+						<label class="fw-semibold fs-6 mb-2">Date de naissance</label>
+						{{ form.date_naissance }}
+					</div>
+					<div class="col-md-4 div_lieu_naissance">
+						<label class="fw-semibold fs-6 mb-2">Lieu de naissance</label>
+						{{ form.lieu_naissance }}
+					</div>
+					<div class="col-md-4 div_nationalite">
+						<label class="fw-semibold fs-6 mb-2">Nationalité</label>
+						{{ form.nationalite }}
+					</div>
+				</div>
+			</div>
+			<!--end::Section 2-->
+
+			<!--begin::Section 3 — Pièce d'identité-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">3</span> Pièce d'identité</div>
+
+				<div class="row mb-2">
+					<div class="col-md-4">
+						<label class="fw-semibold fs-6 mb-2">Nature de pièce d'identité</label>
+						{{ form.type_piece }}
+					</div>
+					<div class="col-md-4">
+						<label class="required fw-semibold fs-6 mb-2">Numéro de pièce d'identité</label>
+						{{ form.num_carte }}
+					</div>
+					<div class="col-md-4">
+						<label class="fw-semibold fs-6 mb-2">Nature de la carte</label>
+						{{ form.nature_carte }}
+					</div>
+				</div>
+			</div>
+			<!--end::Section 3-->
+
+			<!--begin::Section 4 — Coordonnées-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">4</span> Coordonnées</div>
+
+				<div class="row mb-7">
+					<div class="col-md-12">
+						<label class="fw-semibold fs-6 mb-2">Adresse / Complément d'adresse</label>
+						{{ form.adresse }}
+					</div>
+				</div>
+
+				<div class="row mb-7">
+					<div class="col-md-6">
+						<label class="fw-semibold fs-6 mb-2">Résidence / Ville</label>
+						{{ form.ville }}
+					</div>
+					<div class="col-md-6">
+						<label class="fw-semibold fs-6 mb-2">Boîte postale</label>
+						{{ form.bp_client }}
+					</div>
+				</div>
+
+				<div class="row mb-7">
+					<div class="col-md-4">
+						<label class="fw-semibold fs-6 mb-2">Téléphone</label>
+						{{ form.tel_client }}
+					</div>
+					<div class="col-md-4">
+						<label class="fw-semibold fs-6 mb-2">Numéro de fax</label>
+						{{ form.fax_client }}
+					</div>
+					<div class="col-md-4">
+						<label class="required fw-semibold fs-6 mb-2">Email</label>
+						{{ form.email_client }}
+					</div>
+				</div>
+
+				<div class="row mb-2">
+					<div class="col-md-12">
+						<label class="fw-semibold fs-6 mb-2">Site web</label>
+						{{ form.site_client }}
+					</div>
+				</div>
+			</div>
+			<!--end::Section 4-->
+
+			<!--begin::Section 5 — Paramètres commerciaux-->
+			<div class="card-section p-7 mb-2">
+				<div class="section-title mb-6"><span class="num">5</span> Paramètres commerciaux</div>
+
+				<div class="row mb-2">
+					<div class="col-md-6">
+						<label class="fw-semibold fs-6 mb-2">Taux de commission (%)</label>
+						{{ form.tx_commission }}
+					</div>
+					<div class="col-md-6">
+						<label class="fw-semibold fs-6 mb-2">Exonéré de taxe</label>
+						{{ form.exonerer_taxe }}
+					</div>
+				</div>
+			</div>
+			<!--end::Section 5-->
+
+		</div>
+
+		<!--begin::Footer-->
+		<div class="flex-center">
+			<button type="submit" class="btn btn-primary">
+				<span class="indicator-label">Enregistrer</span>
+			</button>
+		</div>
+		<!--end::Footer-->
+
+	</form>
+	<!--end::Form-->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/creer_client.js' %}"></script>
+{% endblock %}

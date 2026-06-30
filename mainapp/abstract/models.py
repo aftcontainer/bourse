@@ -20,6 +20,11 @@ class AbstractModel(models.Model):
     updated = models.DateTimeField(auto_now=True)
     user_id = models.IntegerField(null=True,blank=True)
     updated_by = models.IntegerField(null=True,blank=True)
+    date_creat = models.DateField(null=True,blank=True)
+    date_modif = models.DateField(null=True,blank=True)
+    nom_creat = models.CharField(max_length=100,null=True,blank=True)
+    nom_modif = models.CharField(max_length=100,null=True,blank=True)
+
 
 
     objects = AbstractManager()

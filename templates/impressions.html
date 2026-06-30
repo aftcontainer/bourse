@@ -1,0 +1,295 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Adapt the extends path above if your base lives elsewhere, e.g. "mainapp/base.html" #}
+
+{% block title %}Impressions{% endblock %}
+{% block titre_page %}Impressions{% endblock %}
+{% block breadcrumb_active %}Impressions{% endblock %}
+
+{# Page-hub : pas de boutons Filter / Create de démo #}
+{% block toolbar_actions %}{% endblock %}
+
+{% block extra_css %}
+<style>
+	/* --- En-tête --- */
+	.donnees-hero {
+		background: linear-gradient(135deg, #1b1b29 0%, #2b2b46 45%, #50cd89 140%);
+		border-radius: 1rem;
+		overflow: hidden;
+		position: relative;
+	}
+	.donnees-hero::after {
+		content: "";
+		position: absolute;
+		right: -60px;
+		top: -60px;
+		width: 220px;
+		height: 220px;
+		background: radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%);
+		pointer-events: none;
+	}
+
+	/* --- Cartes --- */
+	.donnees-card {
+		border: 1px solid var(--bs-gray-200);
+		border-radius: 1rem;
+		transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+		overflow: hidden;
+		position: relative;
+	}
+	.donnees-card::before {
+		content: "";
+		position: absolute;
+		left: 0; right: 0; top: 0;
+		height: 4px;
+		background: var(--accent, var(--bs-primary));
+		opacity: 0;
+		transition: opacity .25s ease;
+	}
+	.donnees-card:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 1rem 2.25rem rgba(24, 28, 50, .12);
+		border-color: transparent;
+	}
+	.donnees-card:hover::before { opacity: 1; }
+	.donnees-card .symbol-label { transition: transform .25s ease; }
+	.donnees-card:hover .symbol-label { transform: scale(1.08); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!--begin::En-tête-->
+<div class="donnees-hero d-flex flex-column flex-md-row align-items-md-center justify-content-between p-8 p-lg-10 mb-9">
+	<div class="text-white mb-5 mb-md-0">
+		<h2 class="text-white fw-bold fs-2 mb-2">Éditions &amp; impressions</h2>
+		<p class="text-white opacity-75 fs-6 mb-0">Sélectionnez un document à éditer, prévisualiser ou imprimer.</p>
+	</div>
+	<span class="symbol symbol-60px">
+		<span class="symbol-label bg-white bg-opacity-25">
+			<i class="ki-duotone ki-printer fs-2x text-white">
+				<span class="path1"></span>
+				<span class="path2"></span>
+				<span class="path3"></span>
+				<span class="path4"></span>
+				<span class="path5"></span>
+			</i>
+		</span>
+	</span>
+</div>
+<!--end::En-tête-->
+
+<!--begin::Grille des cartes-->
+<div class="row g-6 g-xl-9 justify-content-center">
+
+	<!--begin::Registre central-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-primary);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-primary">
+						<i class="ki-duotone ki-note fs-2x text-primary">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Registre central</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Éditer le registre central des titres et des opérations.</p>
+				<a href="#" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Registre central-->
+
+	<!--begin::Avis de transaction-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-info);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-info">
+						<i class="ki-duotone ki-message-text-2 fs-2x text-info">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Avis de transaction</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Générer les avis confirmant les transactions réalisées.</p>
+				<a href="#" class="btn btn-sm btn-light-info fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Avis de transaction-->
+
+	<!--begin::Actionnaires-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-element-11 fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Actionnaires</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Éditer la fiche détaillée d'un ou plusieurs actionnaires.</p>
+				<a href="#" class="btn btn-sm btn-light-success fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Actionnaires-->
+
+	<!--begin::Dividende-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-warning);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-warning">
+						<i class="ki-duotone ki-credit-cart fs-2x text-warning">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Dividende</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Éditer les états de répartition et de paiement des dividendes.</p>
+				<a href="#" class="btn btn-sm btn-light-warning fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Dividende-->
+
+	<!--begin::Certificat d'Actions-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-danger);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-danger">
+						<i class="ki-duotone ki-shield-tick fs-2x text-danger">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Certificat d'actions</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Imprimer les certificats nominatifs attestant la détention d'actions.</p>
+				<a href="{#" class="btn btn-sm btn-light-danger fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Certificat d'Actions-->
+
+	<!--begin::Historique des mouvements-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #7239ea;">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label" style="background-color: #f8f5ff;">
+						<i class="ki-duotone ki-calendar-8 fs-2x" style="color:#7239ea;">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+							<span class="path5"></span>
+							<span class="path6"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Historique des mouvements</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Éditer l'historique des mouvements de titres sur une période.</p>
+				<a href="#" class="btn btn-sm fw-semibold w-100" style="background-color:#f8f5ff; color:#7239ea;">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Historique des mouvements-->
+
+	<!--begin::Liste des actionnaires-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-info);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-info">
+						<i class="ki-duotone ki-data fs-2x text-info">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Liste des actionnaires</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Imprimer la liste complète des actionnaires et de leurs parts.</p>
+				<a href="#" class="btn btn-sm btn-light-info fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Liste des actionnaires-->
+
+	<!--begin::Attestation de titre-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-file-added fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Attestation de titre</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Générer une attestation officielle de détention de titres.</p>
+				<a href="#" class="btn btn-sm btn-light-success fw-semibold w-100">
+					Imprimer
+					<i class="ki-duotone ki-printer fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Attestation de titre-->
+
+</div>
+<!--end::Grille des cartes-->
+{% endblock %}

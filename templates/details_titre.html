@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Adaptez le chemin extends ci-dessus si votre base se trouve ailleurs, ex. "mainapp/base.html" #}
+
+{% block title %}Détails titre {{obj.libelle}}{% endblock %}
+{% block titre_page %}Détails titre {{obj.libelle}}{% endblock %}
+{% block breadcrumb_active %}Détails titre {{obj.libelle}}{% endblock %}
+
+
+{% block extra_css %}
+<style>
+    .detail-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+
+    /* Une ligne = un libellé + une valeur */
+    .detail-row {
+       display: flex; align-items: center;
+       padding: 1rem 0;
+       border-bottom: 1px dashed var(--bs-gray-200);
+    }
+    .detail-row:last-child { border-bottom: 0; }
+
+    .detail-label {
+       flex: 0 0 220px; max-width: 220px;
+       color: var(--bs-gray-600); font-weight: 600;
+    }
+    .detail-value {
+       flex: 1 1 auto;
+       color: var(--bs-gray-900); font-weight: 600;
+    }
+
+    /* Pastille pour afficher une valeur mise en avant (montant, taux…) */
+    .detail-pill {
+       display: inline-flex; align-items: center; justify-content: center;
+       min-width: 64px; height: 34px; padding: 0 .75rem;
+       border-radius: .65rem; background: var(--bs-light-primary);
+       color: var(--bs-primary); font-weight: 700;
+    }
+
+    /* Aperçu du logo */
+    .titre-logo {
+       width: 56px; height: 56px; border-radius: .65rem;
+       object-fit: cover; border: 1px solid var(--bs-gray-200);
+    }
+
+    @media (max-width: 575.98px) {
+       .detail-row { flex-direction: column; align-items: flex-start; }
+       .detail-label { max-width: 100%; margin-bottom: .25rem; }
+    }
+</style>
+{% endblock %}
+
+{% block toolbar_actions %}
+   <a href="{% url 'mainapp:liste_titres' %}" class="btn btn-sm btn-light">
+      <i class="ki-outline ki-arrow-left fs-4"></i> Retour
+   </a>
+   <a href="{% url 'mainapp:editer_titre' obj.public_id %}" class="btn btn-sm btn-primary">
+      <i class="ki-outline ki-pencil fs-4"></i> Modifier
+   </a>
+{% endblock %}
+
+{% block content %}
+    <!--begin::Card-->
+    <div class="card detail-card">
+
+       <!--begin::Card header-->
+       <div class="card-header border-0 pt-7">
+          <h3 class="card-title align-items-center">
+             {% if obj.logo %}
+                <img src="{{ obj.logo.url }}" alt="{{ obj.libelle }}" class="titre-logo me-4">
+             {% endif %}
+             <span class="d-flex flex-column">
+                <span class="card-label fw-bold fs-3 mb-1">
+                   {{ obj.libelle|default:"Titre" }}
+                </span>
+                <span class="text-muted fw-semibold fs-7">
+                   {{ obj.type_titre|default:"—" }} · {{ obj.devise|default:"—" }}
+                </span>
+             </span>
+          </h3>
+       </div>
+       <!--end::Card header-->
+
+       <!--begin::Card body-->
+       <div class="card-body py-8 px-lg-12">
+
+          <!--begin::Type de titre-->
+          <div class="detail-row">
+             <div class="detail-label">Type de titre</div>
+             <div class="detail-value">{{ obj.type_titre|default:"—" }}</div>
+          </div>
+          <!--end::Type de titre-->
+
+          <!--begin::Libellé-->
+          <div class="detail-row">
+             <div class="detail-label">Libellé</div>
+             <div class="detail-value">{{ obj.libelle|default:"—" }}</div>
+          </div>
+          <!--end::Libellé-->
+
+          <!--begin::Devise-->
+          <div class="detail-row">
+             <div class="detail-label">Devise</div>
+             <div class="detail-value">{{ obj.devise|default:"—" }}</div>
+          </div>
+          <!--end::Devise-->
+
+          <!--begin::Nominal-->
+          <div class="detail-row">
+             <div class="detail-label">Nominal</div>
+             <div class="detail-value">
+                <span class="detail-pill">{{ obj.nominal|default:"0" }}</span>
+             </div>
+          </div>
+          <!--end::Nominal-->
+
+          <!--begin::Nombre d'actions-->
+          <div class="detail-row">
+             <div class="detail-label">Nombre d'actions</div>
+             <div class="detail-value">{{ obj.nb_actions|default:"—" }}</div>
+          </div>
+          <!--end::Nombre d'actions-->
+
+          <!--begin::Cours de l'action-->
+          <div class="detail-row">
+             <div class="detail-label">Cours de l'action</div>
+             <div class="detail-value">{{ obj.cours|default:"—" }}</div>
+          </div>
+          <!--end::Cours de l'action-->
+
+          <!--begin::Minimum de souscription-->
+          <div class="detail-row">
+             <div class="detail-label">Minimum de souscription</div>
+             <div class="detail-value">{{ obj.nb_mini|default:"—" }}</div>
+          </div>
+          <!--end::Minimum de souscription-->
+
+          <!--begin::Cours de l'obligation-->
+          <div class="detail-row">
+             <div class="detail-label">Cours de l'obligation</div>
+             <div class="detail-value">{{ obj.cours_oblig|default:"—" }}</div>
+          </div>
+          <!--end::Cours de l'obligation-->
+
+          <!--begin::Taux de l'obligation-->
+          <div class="detail-row">
+             <div class="detail-label">Taux de l'obligation (%)</div>
+             <div class="detail-value">
+                <span class="detail-pill">{{ obj.tx_oblig|default:"0" }} %</span>
+             </div>
+          </div>
+          <!--end::Taux de l'obligation-->
+
+          <!--begin::Date dernier coupon-->
+          <div class="detail-row">
+             <div class="detail-label">Date dernier coupon</div>
+             <div class="detail-value">{{ obj.dercoupon|date:"d/m/Y"|default:"—" }}</div>
+          </div>
+          <!--end::Date dernier coupon-->
+
+          <!--begin::Logo-->
+          <div class="detail-row">
+             <div class="detail-label">Logo du titre</div>
+             <div class="detail-value">
+                {% if obj.logo %}
+                   <a href="{{ obj.logo.url }}" target="_blank">{{ obj.logo.name }}</a>
+                {% else %}
+                   —
+                {% endif %}
+             </div>
+          </div>
+          <!--end::Logo-->
+
+       </div>
+       <!--end::Card body-->
+
+    </div>
+    <!--end::Card-->
+{% endblock %}
+
+{% block extra_js %}
+   <script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+   <script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+   <script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+   <script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+{% endblock %}

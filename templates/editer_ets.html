@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Modifier établissement{% endblock %}
+{% block titre_page %}Modifier établissement{% endblock %}
+{% block breadcrumb_active %}Modifier établissement{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.devise-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.devise-search .form-control { padding-left: 2.75rem; }
+	.devise-search .search-icon {
+		position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+		color: var(--bs-gray-500); pointer-events: none;
+	}
+	.symbole-pill {
+		display: inline-flex; align-items: center; justify-content: center;
+		min-width: 34px; height: 34px; padding: 0 .5rem;
+		border-radius: .65rem; background: var(--bs-light-primary);
+		color: var(--bs-primary); font-weight: 700;
+	}
+	/* Sous-libellé (ex. "Tranche 1") sous le label principal */
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+	<!--begin::Form-->
+      <form id='etablissementForm' method="post" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!--begin::Modal body-->
+        <div class="modal-body py-10 px-lg-12">
+
+           <!--begin::Chemin du logo-->
+           <div class="mb-7">
+              <label class="fw-semibold fs-6 mb-2">Chemin du logo</label>
+              {{ form.logo }}
+           </div>
+           <!--end::Chemin du logo-->
+
+           <!--begin::Ligne Code / Sigle-->
+           <div class="row mb-7">
+              <label class="fw-semibold fs-6 mb-2">Sigle</label>
+              {{ form.sigle }}
+           </div>
+           <!--end::Ligne Code / Sigle-->
+
+           <!--begin::Libellé-->
+           <div class="mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Libellé</label>
+              {{ form.libelle }}
+           </div>
+           <!--end::Libellé-->
+
+           <!--begin::Adresse-->
+           <div class="mb-7">
+              <label class="fw-semibold fs-6 mb-2">Adresse</label>
+              {{ form.adresse }}
+           </div>
+           <!--end::Adresse-->
+
+           <!--begin::Ligne Résidence / Boîte postale-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Résidence</label>
+                 {{ form.ville }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Boîte postale</label>
+                 {{ form.bp_etablissement }}
+              </div>
+           </div>
+           <!--end::Ligne Résidence / Boîte postale-->
+
+           <!--begin::Ligne Type commission / Commission minimum-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Type de commission</label>
+                 {{ form.type_com }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Commission minimum</label>
+                 {{ form.min_commission }}
+              </div>
+           </div>
+           <!--end::Ligne Type commission / Commission minimum-->
+
+           <!--begin::Ligne Taux rétrocession / Montant mini rétrocession-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Taux rétrocession (%)</label>
+                 {{ form.tx_retro }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">Montant mini rétrocession</label>
+                 {{ form.min_retro }}
+              </div>
+           </div>
+           <!--end::Ligne Taux rétrocession / Montant mini rétrocession-->
+
+           <!--begin::Ligne Plafond 1 / Taux < Tranche 1-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">
+                    Plafond commission 1 <span class="label-hint">(Tranche 1)</span>
+                 </label>
+                 {{ form.plafond_commission }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">
+                    Taux de commission (%) <span class="label-hint">(&lt; Tranche 1)</span>
+                 </label>
+                 {{ form.tx_commission }}
+              </div>
+           </div>
+           <!--end::Ligne Plafond 1 / Taux < Tranche 1-->
+
+           <!--begin::Ligne Plafond 2 / Taux Tranche 1-2-->
+           <div class="row mb-7">
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">
+                    Plafond commission 2 <span class="label-hint">(Tranche 2)</span>
+                 </label>
+                 {{ form.plafond_commission2 }}
+              </div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">
+                    Taux de commission (%) <span class="label-hint">(&gt; Tranche 1 et &lt; Tranche 2)</span>
+                 </label>
+                 {{ form.tx_commission2 }}
+              </div>
+           </div>
+           <!--end::Ligne Plafond 2 / Taux Tranche 1-2-->
+
+           <!--begin::Ligne Taux > Tranche 2-->
+           <div class="row mb-7">
+              <div class="col-md-6"></div>
+              <div class="col-md-6">
+                 <label class="fw-semibold fs-6 mb-2">
+                    Taux de commission (%) <span class="label-hint">(&gt; Tranche 2)</span>
+                 </label>
+                 {{ form.tx_commission3 }}
+              </div>
+           </div>
+           <!--end::Ligne Taux > Tranche 2-->
+
+        </div>
+        <!--end::Modal body-->
+
+        <!--begin::Modal footer-->
+        <div class="modal-footer flex-center">
+           <button type="submit" class="btn btn-primary">
+              <span class="indicator-label">Modifier</span>
+           </button>
+        </div>
+        <!--end::Modal footer-->
+
+    </form>
+    <!--end::Form-->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+		<!--end::Global Javascript Bundle-->
+		<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+{% endblock %}

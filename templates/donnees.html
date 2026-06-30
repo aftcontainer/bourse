@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+{% load static %}
+
+{# Adapt the extends path above if your base lives elsewhere, e.g. "mainapp/base.html" #}
+
+{% block title %}Données{% endblock %}
+{% block titre_page %}Données{% endblock %}
+{% block breadcrumb_active %}Données{% endblock %}
+
+{# The Données page is a simple navigation hub: no Filter / Create toolbar buttons #}
+{% block toolbar_actions %}{% endblock %}
+
+{% block extra_css %}
+<style>
+	/* --- Données : en-tête --- */
+	.donnees-hero {
+		background: linear-gradient(135deg, #1b1b29 0%, #2b2b46 45%, #3699ff 140%);
+		border-radius: 1rem;
+		overflow: hidden;
+		position: relative;
+	}
+	.donnees-hero::after {
+		content: "";
+		position: absolute;
+		right: -60px;
+		top: -60px;
+		width: 220px;
+		height: 220px;
+		background: radial-gradient(circle, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 70%);
+		pointer-events: none;
+	}
+
+	/* --- Données : cartes --- */
+	.donnees-card {
+		border: 1px solid var(--bs-gray-200);
+		border-radius: 1rem;
+		transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+		overflow: hidden;
+		position: relative;
+	}
+	.donnees-card::before {
+		content: "";
+		position: absolute;
+		left: 0; right: 0; top: 0;
+		height: 4px;
+		background: var(--accent, var(--bs-primary));
+		opacity: 0;
+		transition: opacity .25s ease;
+	}
+	.donnees-card:hover {
+		transform: translateY(-6px);
+		box-shadow: 0 1rem 2.25rem rgba(24, 28, 50, .12);
+		border-color: transparent;
+	}
+	.donnees-card:hover::before { opacity: 1; }
+	.donnees-card .symbol-label { transition: transform .25s ease; }
+	.donnees-card:hover .symbol-label { transform: scale(1.08); }
+
+	.donnees-badge-sub {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+<!--begin::En-tête-->
+<div class="donnees-hero d-flex flex-column flex-md-row align-items-md-center justify-content-between p-8 p-lg-10 mb-9">
+	<div class="text-white mb-5 mb-md-0">
+		<h2 class="text-white fw-bold fs-2 mb-2">Gestion des données</h2>
+		<p class="text-white opacity-75 fs-6 mb-0">Sélectionnez un module pour saisir, consulter ou générer vos données boursières.</p>
+	</div>
+	<span class="symbol symbol-60px">
+		<span class="symbol-label bg-white bg-opacity-25">
+			<i class="ki-duotone ki-data fs-2x text-white">
+				<span class="path1"></span>
+				<span class="path2"></span>
+				<span class="path3"></span>
+			</i>
+		</span>
+	</span>
+</div>
+<!--end::En-tête-->
+
+<!--begin::Grille des cartes-->
+<div class="row g-6 g-xl-9 justify-content-center">
+
+	<!--begin::Établissement-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-primary);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-primary">
+						<i class="ki-duotone ki-briefcase fs-2x text-primary">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Établissements</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Créer et gérer les établissements financiers et leurs informations.</p>
+				<a href="{% url 'mainapp:liste_ets' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Ouvrir
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Établissement-->
+
+	<!--begin::Souscripteur-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-element-11 fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Souscripteurs</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Enregistrer et suivre les souscripteurs et leurs portefeuilles.</p>
+				<a href="{% url 'mainapp:liste_clients' %}" class="btn btn-sm btn-light-success fw-semibold w-100">
+					Ouvrir
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Souscripteur-->
+
+	<!--begin::Ordre de bourse-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-info);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-info">
+						<i class="ki-duotone ki-chart-simple fs-2x text-info">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+							<span class="path4"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Ordres de bourse</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Saisir et traiter les ordres d'achat et de vente sur le marché.</p>
+				<a href="#" class="btn btn-sm btn-light-info fw-semibold w-100">
+					Ouvrir
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Ordre de bourse-->
+
+	<!--begin::Nantissement-->
+	{% comment %}
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-warning);">
+			<span class="badge badge-light-warning fw-semibold donnees-badge-sub">Sous-menu</span>
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-warning">
+						<i class="ki-duotone ki-shield-tick fs-2x text-warning">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Nantissements</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Gérer les nantissements, garanties et mainlevées des titres.</p>
+				<a href="#" class="btn btn-sm btn-light-warning fw-semibold w-100">
+					Ouvrir
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	{% endcomment %}
+	<!--end::Nantissement-->
+
+	<!--begin::Génération des comptes d'actionnaires-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-danger);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-danger">
+						<i class="ki-duotone ki-data fs-2x text-danger">
+							<span class="path1"></span>
+							<span class="path2"></span>
+							<span class="path3"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Comptes d'actionnaires</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Générer automatiquement les comptes pour l'ensemble des actionnaires.</p>
+				<a href="#" class="btn btn-sm btn-light-danger fw-semibold w-100">
+					Générer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Génération des comptes d'actionnaires-->
+
+	<!--begin::Génération des numéros actions-->
+	{% comment %}
+		<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #7239ea;">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label" style="background-color: #f8f5ff;">
+						<i class="ki-duotone ki-abstract-26 fs-2x" style="color:#7239ea;">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Numéros d'actions</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Attribuer et générer les numéros uniques pour les actions émises.</p>
+				<a href="#" class="btn btn-sm fw-semibold w-100" style="background-color:#f8f5ff; color:#7239ea;">
+					Générer
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	{% endcomment %}
+	<!--end::Génération des numéros actions-->
+
+	<!--begin::Augmentation du capital-->
+	{% comment %}
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-rocket fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Augmentation du capital</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Enregistrer et suivre les opérations d'augmentation du capital.</p>
+				<a href="#" class="btn btn-sm btn-light-success fw-semibold w-100">
+					Ouvrir
+					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+						<span class="path1"></span>
+						<span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	{% endcomment %}
+	<!--end::Augmentation du capital-->
+
+</div>
+<!--end::Grille des cartes-->
+{% endblock %}

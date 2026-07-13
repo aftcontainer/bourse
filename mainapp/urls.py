@@ -1,10 +1,13 @@
-from django.urls import path
+from django.urls import path, reverse_lazy
+from django.contrib.auth import views as auth_views
 from . import views
+from .forms import CustomPasswordResetForm
 
 app_name = "mainapp"
 
 urlpatterns = [
-    path('login', views.sign_in,name="sign_in"),
+    path('connexion', views.se_connecter,name="connexion"),
+    path('deconnexion', views.se_deconnecter,name="deconnexion"),
     path('', views.home,name="home"),
     path('donnees', views.donnees,name="donnees"),
     path('impressions', views.impressions,name="impressions"),
@@ -27,10 +30,39 @@ urlpatterns = [
     path('donnees/etablissements/creer', views.creer_ets,name="creer_ets"),
     path('donnees/souscripteurs', views.liste_clients,name="liste_clients"),
     path('utilisateurs', views.gestion_utilisateurs,name="gestion_utilisateurs"),
-    path('utilisateurs/liste', views.liste_utlisateurs,name="liste_utlisateurs"),
+    path('utilisateurs/liste', views.liste_utilisateurs,name="liste_utilisateurs"),
     path('utilisateurs/nouveau', views.creer_utilisateur,name="creer_utilisateur"),
     path('utilisateurs/<uuid:public_id>/editer', views.editer_utilisateur,name="editer_utilisateur"),
     path('donnees/souscripteurs', views.liste_clients,name="liste_clients"),
     path('donnees/souscripteurs/creer', views.creer_souscripteur,name="creer_souscripteur"),
-    path('donnees/souscripteurs/<uuid:public_id>/editer', views.creer_souscripteur,name="creer_souscripteur"),
+    path('donnees/souscripteurs/<uuid:public_id>/editer', views.editer_souscripteur,name="editer_souscripteur"),
+    path('donnees/souscripteurs/<uuid:public_id>', views.details_souscripteur,name="details_souscripteur"),
+    path('donnees/comptes', views.liste_comptes,name="liste_comptes"),
+    path('utilisateurs/roles', views.liste_roles,name="liste_roles"),
+    path('utilisateurs/roles/creer', views.creer_role,name="creer_role"),
+    path('utilisateurs/roles/<uuid:public_id>/editer', views.editer_role,name="editer_role"),
+    path('audit', views.journal_audit,name="journal_audit"),
+    path('roles/affecter', views.attribuer_role,name="attribuer_role"),
+    path('utilisateurs/<uuid:public_id>/roles/',views.attribuer_user_role,name='attribuer_user_role'),
+    path('utilisateurs/<uuid:public_id>/',views.details_utilisateur,name='details_utilisateur'),
+    path('utilisateurs/roles/<uuid:public_id>', views.details_role, name='details_role'),
+    path('utilisateurs/roles/<uuid:public_id>/editer', views.editer_role, name='editer_role'),
+    path('donnees/ordres', views.liste_operations, name='liste_operations'),
+    path('activate/<uidb64>/<token>/', views.activate,name='activate'),
+    path('donnees/ordre/creer', views.effectuer_ordre,name='effectuer_ordre'),
+    path("ajax/titres-par-type/", views.titres_par_type, name="titres_par_type"),
+    path("donnees/operations/achat", views.achat_titres, name="achat_titres"),
+    path("donnees/operations/transfert", views.transfert_titres, name="transfert_titres"),
+    path("ajax/clients-par-titre/", views.clients_par_titre, name="clients_par_titre"),
+    path("ajax/beneficiaires-par-etablissement/",views.beneficiaires_par_etablissement,name="beneficiaires_par_etablissement"),
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        template_name="password_reset.html", form_class=CustomPasswordResetForm,
+        email_template_name="password_reset_email.html",
+        success_url=reverse_lazy("mainapp:password_reset_done")),
+         name='password_reset'
+         ),
+    path('password_reset/done/',auth_views.PasswordResetDoneView.as_view(template_name="password_reset_done.html"),name='password_reset_done'),
+    path('reset/<uidb64>/<token>/',auth_views.PasswordResetConfirmView.as_view(success_url=reverse_lazy("mainapp:password_reset_complete")),name='password_reset_confirm'),
+    path('reset/done/',auth_views.PasswordResetCompleteView.as_view(template_name="password_reset_complete.html"),name='password_reset_complete'),
+
 ]

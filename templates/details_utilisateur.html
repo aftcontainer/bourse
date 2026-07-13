@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ utilisateur.first_name }} {{ utilisateur.last_name }}{% endblock %}
+{% block titre_page %}Détails de l'utilisateur{% endblock %}
+{% block breadcrumb_active %}{{ utilisateur.first_name }} {{ utilisateur.last_name }}{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+
+	/* ---- Bannière profil ---- */
+	.profile-banner {
+		display: flex; align-items: center; gap: 1.3rem;
+		flex-wrap: wrap;
+	}
+	.profile-banner .avatar {
+		width: 72px; height: 72px; border-radius: .9rem; flex-shrink: 0;
+		display: flex; align-items: center; justify-content: center;
+		background: var(--bs-primary); color: #fff; font-weight: 700; font-size: 1.4rem;
+	}
+	.profile-banner .name { font-weight: 700; font-size: 1.25rem; color: var(--bs-gray-800); }
+	.profile-banner .email { color: var(--bs-gray-500); }
+	.profile-banner .meta-badges { margin-top: .5rem; display: flex; gap: .4rem; flex-wrap: wrap; }
+	.profile-banner .meta-badges .badge { font-size: .75rem; }
+
+	.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
+	.info-item .info-label { font-size: .78rem; color: var(--bs-gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
+	.info-item .info-value { font-size: .95rem; color: var(--bs-gray-800); font-weight: 600; margin-top: .15rem; }
+
+	/* ---- Cartes de rôles (lecture seule) ---- */
+	.role-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: .9rem;
+	}
+	.role-card-view {
+		border: 1px solid var(--bs-gray-200); border-radius: .85rem;
+		padding: 1rem 1.1rem;
+		border-left: 4px solid var(--bs-primary);
+	}
+	.role-card-view .role-name { font-weight: 700; color: var(--bs-gray-800); }
+	.role-card-view .role-desc { font-size: .82rem; color: var(--bs-gray-500); margin-top: .35rem; }
+	.role-card-view .role-perm-count {
+		font-size: .72rem; font-weight: 700;
+		background: var(--bs-gray-200); color: var(--bs-gray-700);
+		border-radius: 2rem; padding: .15rem .55rem; margin-top: .5rem;
+		display: inline-block;
+	}
+
+	/* ---- Permissions effectives (matrice compacte, lecture seule) ---- */
+	.perm-table-wrapper {
+		max-height: 380px;
+		overflow-y: auto;
+		border: 1px solid var(--bs-gray-200);
+		border-radius: .75rem;
+	}
+	table.perm-table-view { margin-bottom: 0; }
+	table.perm-table-view thead th {
+		position: sticky; top: 0; z-index: 2;
+		background: var(--bs-gray-100);
+		font-size: .82rem; font-weight: 700; color: var(--bs-gray-700);
+		text-align: center; vertical-align: middle;
+	}
+	table.perm-table-view thead th:first-child { text-align: left; padding-left: 1.1rem; }
+	table.perm-table-view tbody td { text-align: center; vertical-align: middle; }
+	table.perm-table-view tbody td:first-child { text-align: left; padding-left: 1.1rem; font-weight: 600; color: var(--bs-gray-800); }
+	.perm-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--bs-success); }
+	.perm-dot.off { background: var(--bs-gray-300); }
+
+	/* ---- Historique récent ---- */
+	.timeline-item { display: flex; gap: .8rem; padding: .6rem 0; border-bottom: 1px solid var(--bs-gray-100); }
+	.timeline-item:last-child { border-bottom: none; }
+	.timeline-item .badge-action { font-size: .72rem; font-weight: 700; padding: .3rem .55rem; border-radius: .4rem; }
+	.badge-CREATE { background: var(--bs-light-success); color: var(--bs-success); }
+	.badge-UPDATE { background: var(--bs-light-primary); color: var(--bs-primary); }
+	.badge-DELETE { background: var(--bs-light-danger);  color: var(--bs-danger); }
+	.badge-LOGIN  { background: var(--bs-light-info);    color: var(--bs-info); }
+	.badge-LOGOUT { background: var(--bs-gray-200);      color: var(--bs-gray-700); }
+	.timeline-date { color: var(--bs-gray-500); font-size: .78rem; }
+</style>
+{% endblock %}
+
+{% block toolbar_actions %}
+	<a href="{% url 'mainapp:liste_utilisateurs' %}" class="btn btn-sm btn-light me-2">
+		<i class="ki-duotone ki-arrow-left fs-5 me-1"><span class="path1"></span><span class="path2"></span></i>
+		Retour à la liste
+	</a>
+	<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}" class="btn btn-sm btn-primary">
+		<i class="ki-duotone ki-setting-3 fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+		Gérer les rôles
+	</a>
+{% endblock %}
+
+{% block content %}
+
+	<!--begin::Section 1 — Profil-->
+	<div class="card-section p-7 mb-8">
+		<div class="section-title mb-6"><span class="num">1</span> Profil</div>
+
+		<div class="profile-banner mb-8">
+			<div class="avatar">
+				{{ utilisateur.first_name|slice:":1" }}{{ utilisateur.last_name|slice:":1" }}
+			</div>
+			<div>
+				<div class="name">{{ utilisateur.last_name }} {{ utilisateur.first_name }}</div>
+				<div class="email">{{ utilisateur.email }}</div>
+				<div class="meta-badges">
+					<span class="badge badge-light">@{{ utilisateur.username }}</span>
+					{% if utilisateur.is_active %}
+						<span class="badge badge-light-success">Actif</span>
+					{% else %}
+						<span class="badge badge-light-danger">Inactif</span>
+					{% endif %}
+					{% if utilisateur.is_superuser %}
+						<span class="badge badge-light-warning">Super-utilisateur</span>
+					{% elif utilisateur.is_staff %}
+						<span class="badge badge-light-info">Staff</span>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<div class="info-grid">
+			<div class="info-item">
+				<div class="info-label">Identifiant public</div>
+				<div class="info-value">{{ utilisateur.public_id }}</div>
+			</div>
+			<div class="info-item">
+				<div class="info-label">Nombre de rôles</div>
+				<div class="info-value">{{ roles_attribues|length }}</div>
+			</div>
+			<div class="info-item">
+				<div class="info-label">Créé le</div>
+				<div class="info-value">{{ utilisateur.updated|date:"d/m/Y H:i"|default:"—" }}</div>
+			</div>
+			<div class="info-item">
+				<div class="info-label">Dernière mise à jour</div>
+				<div class="info-value">{{ utilisateur.created|date:"d/m/Y H:i"|default:"—" }}</div>
+			</div>
+		</div>
+	</div>
+	<!--end::Section 1-->
+
+	<!--begin::Section 2 — Rôles attribués-->
+	<div class="card-section p-7 mb-8">
+		<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
+			<div class="section-title"><span class="num">2</span> Rôles attribués</div>
+			<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}" class="fw-semibold fs-7 text-primary">
+				Modifier les rôles
+			</a>
+		</div>
+
+		<div class="role-grid">
+			{% for role in roles_attribues %}
+				<div class="role-card-view">
+					<div class="role-name">{{ role.libelle }}</div>
+					{% if role.description %}
+						<div class="role-desc">{{ role.description }}</div>
+					{% endif %}
+					<span class="role-perm-count">{{ role.permissions.count }} permission(s)</span>
+				</div>
+			{% empty %}
+				<div class="text-muted py-6 text-center">
+					Aucun rôle attribué pour le moment.
+					<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}">Attribuer un rôle</a>.
+				</div>
+			{% endfor %}
+		</div>
+	</div>
+	<!--end::Section 2-->
+
+	<!--begin::Section 3 — Permissions effectives (cumul de tous les rôles)-->
+	<div class="card-section p-7 mb-8">
+		<div class="section-title mb-6"><span class="num">3</span> Permissions effectives</div>
+
+		<div class="perm-table-wrapper">
+			<table class="table table-row-bordered perm-table-view">
+				<thead>
+					<tr>
+						<th>Module</th>
+						<th style="width:90px;">Voir</th>
+						<th style="width:90px;">Ajouter</th>
+						<th style="width:90px;">Modifier</th>
+						<th style="width:90px;">Supprimer</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for module in permissions_effectives %}
+						<tr>
+							<td>{{ module.label }}</td>
+							<td><span class="perm-dot {% if not module.view %}off{% endif %}"></span></td>
+							<td><span class="perm-dot {% if not module.add %}off{% endif %}"></span></td>
+							<td><span class="perm-dot {% if not module.change %}off{% endif %}"></span></td>
+							<td><span class="perm-dot {% if not module.delete %}off{% endif %}"></span></td>
+						</tr>
+					{% empty %}
+						<tr>
+							<td colspan="5" class="text-center text-muted py-6">
+								Aucune permission effective (aucun rôle attribué).
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+		<div class="text-muted fs-8 mt-3">
+			Cumul de toutes les permissions issues des rôles attribués ci-dessus.
+		</div>
+	</div>
+	<!--end::Section 3-->
+
+	<!--begin::Section 4 — Historique récent-->
+	<div class="card-section p-7 mb-2">
+		<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
+			<div class="section-title"><span class="num">4</span> Historique récent</div>
+			<a href="{% url 'mainapp:journal_audit' %}?user={{ utilisateur.id }}" class="fw-semibold fs-7 text-primary">
+				Voir tout le journal
+			</a>
+		</div>
+
+		{% for log in historique_recent %}
+			<div class="timeline-item">
+				<span class="badge-action badge-{{ log.action }}">{{ log.get_action_display }}</span>
+				<div>
+					<div class="fw-semibold">{{ log.object_repr|default:"—" }}</div>
+					<div class="timeline-date">{{ log.created|date:"d/m/Y H:i:s" }}</div>
+				</div>
+			</div>
+		{% empty %}
+			<div class="text-muted py-6 text-center">Aucune activité récente.</div>
+		{% endfor %}
+	</div>
+	<!--end::Section 4-->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/details_utilisateur.js' %}"></script>
+{% endblock %}
+

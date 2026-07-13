@@ -49,12 +49,18 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'mainapp.middleware.CurrentRequestMiddleware'
 ]
 
 AUTHENTICATION_BACKENDS = [
     "mainapp.backends.EmailOrUsernameBackend",
     "django.contrib.auth.backends.ModelBackend",
 ]
+
+AUTH_USER_MODEL = 'mainapp.User'
+
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/connexion'
 
 ROOT_URLCONF = 'core.urls'
 
@@ -73,6 +79,7 @@ TEMPLATES = [
                 'mainapp.context_processor.cat_client_form',
                 'mainapp.context_processor.t_operation_form',
                 'mainapp.context_processor.t_titre_form',
+                'mainapp.context_processor.reset_email_form',
             ],
         },
     },
@@ -104,6 +111,8 @@ DATABASES = {
         'PASSWORD': os.environ.get('DB_PWD'),
     }
 }
+
+DEFAULT_FROM_EMAIL=os.environ.get('DEFAULT_FROM_EMAIL')
 
 
 # Password validation
@@ -145,6 +154,11 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+
+CELERY_BROKER_URL = "redis://redis:6379/0"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_BACKEND = "redis://redis:6379/0"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

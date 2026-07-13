@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Journal d'audit{% endblock %}
+{% block titre_page %}Journal d'audit{% endblock %}
+{% block breadcrumb_active %}Journal d'audit{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+
+	/* ---- Badges d'action ---- */
+	.badge-action { font-size: .75rem; font-weight: 700; padding: .4rem .7rem; border-radius: .5rem; }
+	.badge-CREATE        { background: var(--bs-light-success); color: var(--bs-success); }
+	.badge-UPDATE        { background: var(--bs-light-primary); color: var(--bs-primary); }
+	.badge-DELETE        { background: var(--bs-light-danger);  color: var(--bs-danger); }
+	.badge-VIEW          { background: var(--bs-gray-200);      color: var(--bs-gray-700); }
+	.badge-LOGIN         { background: var(--bs-light-info);    color: var(--bs-info); }
+	.badge-LOGOUT        { background: var(--bs-gray-200);      color: var(--bs-gray-700); }
+	.badge-LOGIN_FAILED  { background: var(--bs-light-danger);  color: var(--bs-danger); }
+	.badge-EXPORT        { background: var(--bs-light-warning); color: var(--bs-warning); }
+
+	/* ---- Table du journal ---- */
+	.audit-table-wrapper {
+		max-height: 620px;
+		overflow-y: auto;
+		border: 1px solid var(--bs-gray-200);
+		border-radius: .75rem;
+	}
+	table.audit-table { margin-bottom: 0; }
+	table.audit-table thead th {
+		position: sticky; top: 0; z-index: 2;
+		background: var(--bs-gray-100);
+		font-size: .82rem; font-weight: 700; color: var(--bs-gray-700);
+		vertical-align: middle;
+		border-bottom: 1px solid var(--bs-gray-200);
+	}
+	table.audit-table tbody td { vertical-align: middle; font-size: .88rem; }
+	table.audit-table tbody tr:hover { background: var(--bs-light-primary); }
+	.audit-date { color: var(--bs-gray-600); white-space: nowrap; }
+	.audit-object { font-weight: 600; color: var(--bs-gray-800); }
+	.audit-model { font-size: .78rem; color: var(--bs-gray-500); }
+	.audit-diff-toggle { cursor: pointer; color: var(--bs-primary); font-size: .82rem; }
+	.audit-diff {
+		background: var(--bs-gray-100); border-radius: .5rem;
+		padding: .6rem .8rem; margin-top: .4rem; font-size: .8rem;
+		display: none;
+	}
+	.audit-diff.show { display: block; }
+	.audit-diff .field-name { font-weight: 700; color: var(--bs-gray-700); }
+	.audit-diff .old-val { color: var(--bs-danger); text-decoration: line-through; }
+	.audit-diff .new-val { color: var(--bs-success); }
+
+	.result-count { color: var(--bs-gray-500); font-size: .85rem; }
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+
+	<!--begin::Filtres-->
+	<form method="get" action="">
+		<div class="card-section p-7 mb-8">
+			<div class="section-title mb-6"><span class="num">1</span> Filtres</div>
+
+			<div class="row mb-7">
+				<div class="col-md-3">
+					<label class="fw-semibold fs-6 mb-2">Type d'action</label>
+					<select name="action" class="form-select">
+						<option value="">Toutes les actions</option>
+						{% for value, label in action_choices %}
+							<option value="{{ value }}" {% if request.GET.action == value %}selected{% endif %}>{{ label }}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="col-md-3">
+					<label class="fw-semibold fs-6 mb-2">Utilisateur</label>
+					<select name="user" class="form-select">
+						<option value="">Tous les utilisateurs</option>
+						{% for u in utilisateurs %}
+							<option value="{{ u.id }}" {% if request.GET.user == u.id|stringformat:"s" %}selected{% endif %}>
+								{{ u.last_name }} {{ u.first_name }}
+							</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="col-md-3">
+					<label class="fw-semibold fs-6 mb-2">Module concerné</label>
+					<select name="model" class="form-select">
+						<option value="">Tous les modules</option>
+						{% for m in modeles %}
+							<option value="{{ m }}" {% if request.GET.model == m %}selected{% endif %}>{{ m|capfirst }}</option>
+						{% endfor %}
+					</select>
+				</div>
+
+				<div class="col-md-3">
+					<label class="fw-semibold fs-6 mb-2">Recherche libre</label>
+					<input type="text" name="q" class="form-control" placeholder="Nom, email, objet..."
+						   value="{{ request.GET.q|default:'' }}">
+				</div>
+			</div>
+
+			<div class="row mb-2">
+				<div class="col-md-3">
+					<label class="fw-semibold fs-6 mb-2">Du</label>
+					<input type="date" name="date_debut" class="form-control" value="{{ request.GET.date_debut|default:'' }}">
+				</div>
+				<div class="col-md-3">
+					<label class="fw-semibold fs-6 mb-2">Au</label>
+					<input type="date" name="date_fin" class="form-control" value="{{ request.GET.date_fin|default:'' }}">
+				</div>
+				<div class="col-md-6 d-flex align-items-end gap-3">
+					<button type="submit" class="btn btn-primary">
+						<span class="indicator-label">Filtrer</span>
+					</button>
+					<a href="{% url 'mainapp:journal_audit' %}" class="btn btn-light">Réinitialiser</a>
+				</div>
+			</div>
+		</div>
+	</form>
+	<!--end::Filtres-->
+
+	<!--begin::Résultats-->
+	<div class="card-section p-7 mb-2">
+		<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
+			<div class="section-title"><span class="num">2</span> Historique des actions</div>
+			<span class="result-count">{{ logs.paginator.count|default:logs|length }} évènement(s)</span>
+		</div>
+
+		<div class="audit-table-wrapper">
+			<table class="table table-row-bordered audit-table">
+				<thead>
+					<tr>
+						<th style="width:170px;">Date / Heure</th>
+						<th style="width:170px;">Utilisateur</th>
+						<th style="width:110px;">Action</th>
+						<th>Objet concerné</th>
+						<th style="width:130px;">Adresse IP</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for log in logs %}
+						<tr>
+							<td class="audit-date">{{ log.created|date:"d/m/Y H:i:s" }}</td>
+							<td>
+								{% if log.user %}
+									{{ log.user.last_name }} {{ log.user.first_name }}
+								{% else %}
+									<span class="text-muted">Système / anonyme</span>
+								{% endif %}
+							</td>
+							<td>
+								<span class="badge-action badge-{{ log.action }}">{{ log.get_action_display }}</span>
+							</td>
+							<td>
+								<div class="audit-object">{{ log.object_repr|default:"—" }}</div>
+								{% if log.content_type %}
+									<div class="audit-model">{{ log.content_type.model|capfirst }}</div>
+								{% endif %}
+								{% if log.changes %}
+									<span class="audit-diff-toggle" data-target="diff-{{ log.id }}">Voir le détail des modifications</span>
+									<div class="audit-diff" id="diff-{{ log.id }}">
+										{% for field, values in log.changes.items %}
+											<div>
+												<span class="field-name">{{ field }} :</span>
+												<span class="old-val">{{ values.0 }}</span> →
+												<span class="new-val">{{ values.1 }}</span>
+											</div>
+										{% endfor %}
+									</div>
+								{% endif %}
+							</td>
+							<td class="text-muted">{{ log.ip_address|default:"—" }}</td>
+						</tr>
+					{% empty %}
+						<tr>
+							<td colspan="5" class="text-center text-muted py-8">
+								Aucune action ne correspond à ces filtres.
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+
+		<!--begin::Pagination-->
+		{% if logs.has_other_pages %}
+			<nav class="mt-6">
+				<ul class="pagination justify-content-end">
+					{% if logs.has_previous %}
+						<li class="page-item">
+							<a class="page-link" href="?{{ request.GET.urlencode }}&page={{ logs.previous_page_number }}">Précédent</a>
+						</li>
+					{% endif %}
+					<li class="page-item disabled">
+						<span class="page-link">Page {{ logs.number }} / {{ logs.paginator.num_pages }}</span>
+					</li>
+					{% if logs.has_next %}
+						<li class="page-item">
+							<a class="page-link" href="?{{ request.GET.urlencode }}&page={{ logs.next_page_number }}">Suivant</a>
+						</li>
+					{% endif %}
+				</ul>
+			</nav>
+		{% endif %}
+		<!--end::Pagination-->
+	</div>
+	<!--end::Résultats-->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/journal_audit.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+	document.querySelectorAll('.audit-diff-toggle').forEach(function (toggle) {
+		toggle.addEventListener('click', function () {
+			const target = document.getElementById(this.dataset.target);
+			if (target) {
+				target.classList.toggle('show');
+				this.textContent = target.classList.contains('show')
+					? 'Masquer le détail des modifications'
+					: 'Voir le détail des modifications';
+			}
+		});
+	});
+});
+</script>
+{% endblock %}
+
+{# =====================================================================
+   NOTES D'INTÉGRATION CÔTÉ VUE (Django)
+   =====================================================================
+
+   from django.core.paginator import Paginator
+   from django.shortcuts import render
+
+   from .models import JournalAudit, User
+
+
+   def journal_audit(request):
+       logs_qs = JournalAudit.objects.select_related('user', 'content_type').order_by('-created')
+
+       action = request.GET.get('action')
+       if action:
+           logs_qs = logs_qs.filter(action=action)
+
+       user_id = request.GET.get('user')
+       if user_id:
+           logs_qs = logs_qs.filter(user_id=user_id)
+
+       model_name = request.GET.get('model')
+       if model_name:
+           logs_qs = logs_qs.filter(content_type__model=model_name)
+
+       q = request.GET.get('q')
+       if q:
+           logs_qs = logs_qs.filter(object_repr__icontains=q)
+
+       date_debut = request.GET.get('date_debut')
+       if date_debut:
+           logs_qs = logs_qs.filter(created__date__gte=date_debut)
+
+       date_fin = request.GET.get('date_fin')
+       if date_fin:
+           logs_qs = logs_qs.filter(created__date__lte=date_fin)
+
+       paginator = Paginator(logs_qs, 50)
+       page_number = request.GET.get('page', 1)
+       logs = paginator.get_page(page_number)
+
+       context = {
+           'logs': logs,
+           'action_choices': JournalAudit.ACTION_CHOICES,
+           'utilisateurs': User.objects.all().order_by('last_name', 'first_name'),
+           'modeles': (
+               JournalAudit.objects
+               .exclude(content_type__isnull=True)
+               .values_list('content_type__model', flat=True)
+               .distinct()
+               .order_by('content_type__model')
+           ),
+       }
+       return render(request, 'mainapp/journal_audit.html', context)
+
+
+   urls.py :
+       path('journal-audit/', views.journal_audit, name='journal_audit'),
+
+   Rappel : le champ `changes` (JSONField) attendu par le template est au
+   format {"nom_champ": ["ancienne_valeur", "nouvelle_valeur"], ...}.
+   Si vous utilisez django-auditlog, adaptez log.changes en conséquence
+   (son format diffère légèrement — voir LogEntry.changes_dict).
+
+===================================================================== #}

@@ -10,7 +10,7 @@
 		<meta property="og:locale" content="fr_FR" />
 		<meta property="og:type" content="article" />
 		<meta property="og:title" content="Metronic - The World's #1 Selling Tailwind CSS & Bootstrap Admin Template by KeenThemes" />
-		<link rel="shortcut icon" href="{% static 'mainapp/media/logos/favicon.ico' %}" />
+		<link rel="shortcut icon" href="{% static 'mainapp/favicon.ico' %}" />
 		<!--begin::Fonts(mandatory for all pages)-->
 		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
 		<!--end::Fonts-->
@@ -20,6 +20,18 @@
 		<!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
 		<link href="{% static 'mainapp/plugins/global/plugins.bundle.css' %}" rel="stylesheet" type="text/css" />
 		<link href="{% static 'mainapp/css/style.bundle.css' %}" rel="stylesheet" type="text/css" />
+		<style>
+			/* Laisser la zone du logo s'adapter à un logo pleine largeur */
+			.app-sidebar .app-sidebar-logo {
+				height: auto !important;
+				padding-top: 16px !important;
+				padding-bottom: 16px !important;
+			}
+			/* Recentrer le bouton de repli (flèche) qui est ancré au bord */
+			.app-sidebar .app-sidebar-logo #kt_app_sidebar_toggle {
+				top: 32px !important;
+			}
+		</style>
 		<!--end::Global Stylesheets Bundle-->
 		<!--begin::Page CSS-->
 		{% block extra_css %}{% endblock %}
@@ -53,7 +65,7 @@
 						<!--begin::Mobile logo-->
 						<div class="d-flex align-items-center flex-grow-1 flex-lg-grow-0">
 							<a href="{% url 'mainapp:home' %}" class="d-lg-none">
-								<img alt="Logo" src="{% static 'mainapp/media/logos/default-small.svg' %}" class="h-30px" />
+								<img alt="Logo" src="{% static 'mainapp/logos/default-small.svg' %}" class="h-30px" />
 							</a>
 						</div>
 						<!--end::Mobile logo-->
@@ -110,7 +122,7 @@
 																<!--begin:Menu item-->
 																<div class="menu-item p-0 m-0">
 																	<!--begin:Menu link-->
-																	<a href="dashboards/ecommerce.html" class="menu-link">
+																	<a href="#" class="menu-link">
 																		<span class="menu-custom-icon d-flex flex-center flex-shrink-0 rounded w-40px h-40px me-3">
 																			<i class="ki-duotone ki-basket text-danger fs-1">
 																				<span class="path1"></span>
@@ -156,7 +168,7 @@
 																<!--begin:Menu item-->
 																<div class="menu-item p-0 m-0">
 																	<!--begin:Menu link-->
-																	<a href="dashboards/online-courses.html" class="menu-link">
+																	<a href="#" class="menu-link">
 																		<span class="menu-custom-icon d-flex flex-center flex-shrink-0 rounded w-40px h-40px me-3">
 																			<i class="ki-duotone ki-color-swatch text-success fs-1">
 																				<span class="path1"></span>
@@ -197,7 +209,7 @@
 																<!--begin:Menu item-->
 																<div class="menu-item p-0 m-0">
 																	<!--begin:Menu link-->
-																	<a href="dashboards/marketing.html" class="menu-link">
+																	<a href="#" class="menu-link">
 																		<span class="menu-custom-icon d-flex flex-center flex-shrink-0 rounded w-40px h-40px me-3">
 																			<i class="ki-duotone ki-chart-simple text-gray-900 fs-1">
 																				<span class="path1"></span>
@@ -221,7 +233,7 @@
 																<!--begin:Menu item-->
 																<div class="menu-item p-0 m-0">
 																	<!--begin:Menu link-->
-																	<a href="dashboards/bidding.html" class="menu-link">
+																	<a href="#" class="menu-link">
 																		<span class="menu-custom-icon d-flex flex-center flex-shrink-0 rounded w-40px h-40px me-3">
 																			<i class="ki-duotone ki-switch text-warning fs-1">
 																				<span class="path1"></span>
@@ -243,7 +255,7 @@
 																<!--begin:Menu item-->
 																<div class="menu-item p-0 m-0">
 																	<!--begin:Menu link-->
-																	<a href="dashboards/pos.html" class="menu-link">
+																	<a href="#" class="menu-link">
 																		<span class="menu-custom-icon d-flex flex-center flex-shrink-0 rounded w-40px h-40px me-3">
 																			<i class="ki-duotone ki-abstract-42 text-danger fs-1">
 																				<span class="path1"></span>
@@ -265,7 +277,7 @@
 																<!--begin:Menu item-->
 																<div class="menu-item p-0 m-0">
 																	<!--begin:Menu link-->
-																	<a href="dashboards/call-center.html" class="menu-link">
+																	<a href="#" class="menu-link">
 																		<span class="menu-custom-icon d-flex flex-center flex-shrink-0 rounded w-40px h-40px me-3">
 																			<i class="ki-duotone ki-call text-primary fs-1">
 																				<span class="path1"></span>
@@ -2780,7 +2792,13 @@
 							<!--begin::Navbar-->
 							<div class="app-navbar flex-shrink-0">
 								<!--begin::User menu-->
-								<div class="app-navbar-item ms-1 ms-md-4" id="kt_header_user_menu_toggle">
+								<div class="app-navbar-item d-flex align-items-center ms-1 ms-md-4" id="kt_header_user_menu_toggle">
+									<!--begin::Nom + email (à gauche de la photo)-->
+									<div class="d-none d-md-flex flex-column align-items-end justify-content-center me-3 lh-1">
+										<span class="fs-6 fw-bold text-gray-900">{{ request.user.first_name }} {{ request.user.last_name }}</span>
+										<span class="fs-7 fw-semibold text-muted mt-1">{{ request.user.email }}</span>
+									</div>
+									<!--end::Nom + email-->
 									<!--begin::Menu wrapper-->
 									<div class="cursor-pointer symbol symbol-35px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
 										<img src="{% static 'mainapp/media/avatars/300-3.jpg' %}" class="rounded-3" alt="user" />
@@ -2799,7 +2817,7 @@
 												<div class="d-flex flex-column">
 													<div class="fw-bold d-flex align-items-center fs-5">Utilisateur connecté
 													<span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">Pro</span></div>
-													<a href="#" class="fw-semibold text-muted text-hover-primary fs-7">robert@kt.com</a>
+													<a href="#" class="fw-semibold text-muted text-hover-primary fs-7">{{request.user.email}}</a>
 												</div>
 												<!--end::Username-->
 											</div>
@@ -2820,7 +2838,7 @@
 										<!--end::Menu separator-->
 										<!--begin::Menu item-->
 										<div class="menu-item px-5">
-											<a href="authentication/layouts/corporate/sign-in.html" class="menu-link px-5">Se déconnecter</a>
+											<a href="{% url 'mainapp:deconnexion' %}" class="menu-link px-5">Se déconnecter</a>
 										</div>
 										<!--end::Menu item-->
 									</div>
@@ -2853,22 +2871,17 @@
 					<!--begin::Sidebar-->
 					<div id="kt_app_sidebar" class="app-sidebar flex-column" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 						<!--begin::Logo-->
-						<div class="app-sidebar-logo px-6" id="kt_app_sidebar_logo">
+						<div class="app-sidebar-logo px-3" id="kt_app_sidebar_logo">
 							<!--begin::Logo image-->
-							<a href="{% url 'mainapp:home' %}">
-								<img alt="Logo" src="{% static 'mainapp/media/logos/default-dark.svg' %}" class="h-25px app-sidebar-logo-default" />
-								<img alt="Logo" src="{% static 'mainapp/media/logos/default-small.svg' %}" class="h-20px app-sidebar-logo-minimize" />
-							</a>
+							<a href="{% url 'mainapp:home' %}" class="d-block w-100">
+									<!-- Logo complet (sidebar déployé) : pleine largeur -->
+									<img alt="AFG Bank" src="{% static 'mainapp/logos/logo_AFG_Bank.png' %}"
+										 class="w-100 h-auto app-sidebar-logo-default bg-white rounded p-3" />
+									<!-- Logo réduit (sidebar minimisé) -->
+									<img alt="AFG Bank" src="{% static 'mainapp/logos/logo_AFG_Bank.png' %}"
+										 class="h-30px app-sidebar-logo-minimize bg-white rounded p-1" />
+								</a>
 							<!--end::Logo image-->
-							<!--begin::Sidebar toggle-->
-							<!--begin::Minimized sidebar setup:
-            if (isset($_COOKIE["sidebar_minimize_state"]) && $_COOKIE["sidebar_minimize_state"] === "on") { 
-                1. "src/js/layout/sidebar.js' %}" adds "sidebar_minimize_state" cookie value to save the sidebar minimize state.
-                2. Set data-kt-app-sidebar-minimize="on" attribute for body tag.
-                3. Set data-kt-toggle-state="active" attribute to the toggle element with "kt_app_sidebar_toggle" id.
-                4. Add "active" class to to sidebar toggle element with "kt_app_sidebar_toggle" id.
-            }
-        -->
 							<div id="kt_app_sidebar_toggle" class="app-sidebar-toggle btn btn-icon btn-shadow btn-sm btn-color-muted btn-active-color-primary h-30px w-30px position-absolute top-50 start-100 translate-middle rotate" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-minimize">
 								<i class="ki-duotone ki-black-left-line fs-3 rotate-180">
 									<span class="path1"></span>
@@ -2888,7 +2901,7 @@
 									<div class="menu menu-column menu-rounded menu-sub-indention fw-semibold fs-6" id="#kt_app_sidebar_menu" data-kt-menu="true" data-kt-menu-expand="false">
 										<!--begin:Menu item-->
 										<div class="menu-item">
-											<a class="menu-link active" href="{% url 'mainapp:home' %}">
+											<a class="menu-link {% if '/' in request.path %}active{% endif %}" href="{% url 'mainapp:home' %}">
 												<span class="menu-icon">
 													<i class="ki-duotone ki-element-11 fs-2">
 														<span class="path1"></span>
@@ -2897,7 +2910,7 @@
 														<span class="path4"></span>
 													</i>
 												</span>
-												<span class="menu-title">Dashboards</span>
+												<span class="menu-title">Dashboard</span>
 											</a>
 										</div>
 										<!--end:Menu item-->
@@ -2912,7 +2925,7 @@
 										<!--end:Menu item-->
 										<!--begin:Menu item-->
 										<div class="menu-item">
-											<a class="menu-link" href="{% url 'mainapp:donnees' %}">
+											<a class="menu-link {% if '/donnees' in request.path %}active{% endif %}" href="{% url 'mainapp:donnees' %}">
 												<span class="menu-icon">
 													<i class="ki-duotone ki-data fs-2">
 														<span class="path1"></span>
@@ -2926,7 +2939,7 @@
 										<!--end:Menu item-->
 										<!--begin:Menu item-->
 										<div class="menu-item">
-											<a class="menu-link" href="{% url 'mainapp:impressions' %}">
+											<a class="menu-link {% if '/impressions' in request.path %}active{% endif %}" href="{% url 'mainapp:impressions' %}">
 												<span class="menu-icon">
 													<i class="ki-duotone ki-printer fs-2">
 														<span class="path1"></span>
@@ -2942,7 +2955,7 @@
 										<!--end:Menu item-->
 										<!--begin:Menu item-->
 										<div class="menu-item">
-											<a class="menu-link" href="{% url 'mainapp:parametres' %}">
+											<a class="menu-link {% if '/parametres' in request.path %}active{% endif %}" href="{% url 'mainapp:parametres' %}">
 												<span class="menu-icon">
 													<i class="ki-duotone ki-setting-2 fs-2">
 														<span class="path1"></span>
@@ -2955,7 +2968,7 @@
 										<!--end:Menu item-->
 										<!--begin:Menu item-->
 										<div class="menu-item">
-											<a class="menu-link" href="{% url 'mainapp:gestion_utilisateurs' %}">
+											<a class="menu-link {% if '/utilisateurs' in request.path %}active{% endif %}" href="{% url 'mainapp:gestion_utilisateurs' %}">
 												<span class="menu-icon">
 													<i class="ki-duotone ki-shield-tick fs-2">
 														<span class="path1"></span>

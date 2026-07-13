@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Attribuer des rôles{% endblock %}
+{% block titre_page %}Attribuer des rôles{% endblock %}
+{% block breadcrumb_active %}Attribuer des rôles{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+
+	/* ---- Fiche utilisateur sélectionné ---- */
+	.user-preview {
+		display: flex; align-items: center; gap: .9rem;
+		border: 1px dashed var(--bs-gray-300); border-radius: .75rem;
+		padding: .85rem 1rem; margin-top: .75rem;
+		background: var(--bs-gray-100);
+	}
+	.user-preview .avatar {
+		width: 42px; height: 42px; border-radius: .6rem;
+		display: flex; align-items: center; justify-content: center;
+		background: var(--bs-primary); color: #fff; font-weight: 700;
+	}
+	.user-preview .email { color: var(--bs-gray-500); font-size: .85rem; }
+
+	/* ---- Cartes de rôles à cocher ---- */
+	.role-search { max-width: 320px; }
+	.role-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: .9rem;
+	}
+	.role-card {
+		border: 1px solid var(--bs-gray-200); border-radius: .85rem;
+		padding: 1rem 1.1rem; cursor: pointer;
+		transition: border-color .15s ease, background .15s ease;
+	}
+	.role-card:hover { border-color: var(--bs-primary); }
+	.role-card.checked {
+		border-color: var(--bs-primary);
+		background: var(--bs-light-primary);
+	}
+	.role-card .role-header {
+		display: flex; align-items: center; justify-content: space-between;
+		gap: .5rem;
+	}
+	.role-card .role-name { font-weight: 700; color: var(--bs-gray-800); }
+	.role-card .role-desc { font-size: .82rem; color: var(--bs-gray-500); margin-top: .35rem; }
+	.role-card .role-perm-count {
+		font-size: .72rem; font-weight: 700;
+		background: var(--bs-gray-200); color: var(--bs-gray-700);
+		border-radius: 2rem; padding: .15rem .55rem; margin-top: .5rem;
+		display: inline-block;
+	}
+	.role-card.d-none { display: none !important; }
+
+	/* ---- Table des attributions existantes ---- */
+	.assign-table th { font-size: .85rem; color: var(--bs-gray-600); }
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+
+	<!--begin::Form d'attribution-->
+	<form method="post" action="">
+		{% csrf_token %}
+
+		{% if messages %}
+			<ul class="messages mb-6">
+				{% for message in messages %}
+					<li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+		<div class="modal-body py-8 px-lg-10">
+
+			<!--begin::Section 1 — Sélection de l'utilisateur-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">1</span> Utilisateur</div>
+
+				<div class="row">
+					<div class="col-md-8">
+						<label class="required fw-semibold fs-6 mb-2">Sélectionner un utilisateur</label>
+						<select name="user" id="userSelect" class="form-select" required>
+							<option value="" disabled {% if not selected_user %}selected{% endif %}>-- Choisir un utilisateur --</option>
+							{% for u in utilisateurs %}
+								<option value="{{ u.id }}"
+										data-email="{{ u.email }}"
+										data-roles="{{ u.role_ids_csv }}"
+										{% if selected_user and selected_user.id == u.id %}selected{% endif %}>
+									{{ u.last_name }} {{ u.first_name }} ({{ u.username }})
+								</option>
+							{% endfor %}
+						</select>
+					</div>
+				</div>
+
+				<div class="user-preview" id="userPreview" style="display:none;">
+					<div class="avatar" id="userAvatarInitials">--</div>
+					<div>
+						<div class="fw-bold" id="userPreviewName">—</div>
+						<div class="email" id="userPreviewEmail">—</div>
+					</div>
+				</div>
+			</div>
+			<!--end::Section 1-->
+
+			<!--begin::Section 2 — Rôles à attribuer-->
+			<div class="card-section p-7 mb-2">
+				<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
+					<div class="section-title"><span class="num">2</span> Rôles à attribuer</div>
+					<span class="perm-badge-count fw-bold text-primary" id="roleSelectedCount">0 rôle(s) sélectionné(s)</span>
+				</div>
+
+				<div class="mb-5">
+					<input type="text" id="roleSearch" class="form-control role-search"
+						   placeholder="Rechercher un rôle...">
+				</div>
+
+				<div class="role-grid" id="roleGrid">
+					{% for role in roles %}
+						<label class="role-card" data-role-name="{{ role.libelle|lower }}" for="role_{{ role.id }}">
+							<div class="role-header">
+								<span class="role-name">{{ role.libelle }}</span>
+								<input type="checkbox"
+									   class="form-check-input role-checkbox"
+									   name="roles"
+									   value="{{ role.id }}"
+									   id="role_{{ role.id }}"
+									   {% if role.id in selected_role_ids %}checked{% endif %}>
+							</div>
+							{% if role.description %}
+								<div class="role-desc">{{ role.description }}</div>
+							{% endif %}
+							<span class="role-perm-count">{{ role.permissions.count }} permission(s)</span>
+						</label>
+					{% empty %}
+						<div class="text-muted py-6 text-center">
+							Aucun rôle disponible. <a href="{% url 'mainapp:creer_role' %}">Créer un rôle</a> d'abord.
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			<!--end::Section 2-->
+
+		</div>
+
+		<!--begin::Footer-->
+		<div class="flex-center mt-8">
+			<button type="submit" class="btn btn-primary">
+				<span class="indicator-label">Enregistrer les attributions</span>
+			</button>
+		</div>
+		<!--end::Footer-->
+
+	</form>
+	<!--end::Form d'attribution-->
+
+	<!--begin::Tableau récapitulatif des attributions existantes-->
+	<div class="card-section p-7 mt-10">
+		<div class="section-title mb-6"><span class="num">3</span> Attributions actuelles</div>
+
+		<div class="table-responsive">
+			<table class="table table-row-bordered assign-table">
+				<thead>
+					<tr>
+						<th>Utilisateur</th>
+						<th>Email</th>
+						<th>Rôles attribués</th>
+						<th class="text-end">Action</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for u in utilisateurs %}
+						<tr>
+							<td class="fw-semibold">{{ u.last_name }} {{ u.first_name }}</td>
+							<td class="text-muted">{{ u.email }}</td>
+							<td>
+								{% for r in u.roles_display %}
+									<span class="badge badge-light-primary me-1">{{ r }}</span>
+								{% empty %}
+									<span class="text-muted fs-8">Aucun rôle</span>
+								{% endfor %}
+							</td>
+							<td class="text-end">
+								<a href="?user={{ u.id }}" class="btn btn-sm btn-light-primary">Modifier</a>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!--end::Tableau récapitulatif-->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/attribuer_role.js' %}"></script>
+{% endblock %}
+
+{# =====================================================================
+   NOTES D'INTÉGRATION CÔTÉ VUE (Django) — Option 2 (Role/UserRole)
+   =====================================================================
+
+   from django.contrib import messages
+   from django.shortcuts import render, redirect, get_object_or_404
+
+   from .models import User, Role, UserRole
+
+
+
+
+
+   urls.py :
+       path('roles/attribuer/', views.attribuer_roles, name='attribuer_roles'),
+
+===================================================================== #}

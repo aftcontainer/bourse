@@ -2,6 +2,7 @@ import uuid
 
 from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from django.http import Http404
@@ -50,6 +51,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     public_id = models.UUIDField(db_index=True, unique=True, default=uuid.uuid4, editable=False)
     username = models.CharField(db_index=True, max_length=255, unique=True)
+    photo = models.ImageField(null=True,blank=True)
     first_name = models.CharField(max_length=255)
     last_name = models.CharField(max_length=255)
     email = models.EmailField('adresse email', unique=True)
@@ -248,15 +250,42 @@ class Titre(AbstractModel):
 
 #A revoir - Cette classe peut etre etre remplacé par
 class Operation(AbstractModel):
+    etablissement = models.ForeignKey('Etablissement',on_delete=models.CASCADE,null=True,blank=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    type_titre = models.ForeignKey(TypeTitre,on_delete=models.DO_NOTHING,null=True,blank=True)
+    titre = models.ForeignKey(Titre,on_delete=models.CASCADE,null=True,blank=True)
     num_ordre = models.IntegerField()
-    num_seq_ordre = models.IntegerField()
-    client = models.ForeignKey(Client,on_delete=models.CASCADE)
+    num_seq_ordre = models.PositiveIntegerField()
     nb_titre = models.IntegerField()
+    sens = models.CharField(max_length=5,null=True,blank=True)
     cours_operation = models.IntegerField()
-    date_ordre = models.DateField()
-    montant = models.PositiveIntegerField()
+    code_op = models.CharField(max_length=6,null=True,blank=True)
+    brut = models.PositiveIntegerField(null=True,blank=True)
+    montant = models.PositiveIntegerField(null=True,blank=True)
+    commission = models.PositiveIntegerField(null=True,blank=True)
+    tax = models.PositiveIntegerField(null=True,blank=True)
+    ordre_valide = models.CharField(max_length=5,null=True,blank=True)
+    ordre_ben = models.CharField(max_length=5,null=True,blank=True)
+    old_id_ben = models.IntegerField(null=True,blank=True)
+    old_id_ets_ben = models.IntegerField(null=True,blank=True)
+    old_id_sous_ben = models.IntegerField(null=True,blank=True)
+    code_op_ben = models.IntegerField(null=True,blank=True)
+    nbportef = models.IntegerField(null=True,blank=True)
+    nbportefben = models.IntegerField(null=True,blank=True)
+    nbencours = models.IntegerField(null=True,blank=True)
+    tot_nbportebef = models.IntegerField(null=True,blank=True)
+    beneficiaire = models.ForeignKey(Client,on_delete=models.DO_NOTHING,related_name='beneficiaires',null=True,blank=True)
+    etablissement_ben = models.ForeignKey('Etablissement',on_delete=models.SET_NULL,null=True,blank=True,related_name='ets_ben')
+    ircm = models.IntegerField(null=True,blank=True)
+    css = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    date_ordre = models.DateField(null=True,blank=True)
     old_id = models.IntegerField(null=True, blank=True)
-    #sens_op = models.CharField(max_length=10)
+    date_creat = models.DateField(null=True,blank=True)
+    date_modif = models.DateField(null=True,blank=True)
+    nom_creat = models.CharField(max_length=30,null=True,blank=True)
+    nom_modif = models.CharField(max_length=30,null=True,blank=True)
+    est_valide = models.BooleanField(default=False)
+    type_op = models.IntegerField(null=True,blank=True)
 
     class Meta:
         db_table = 'OPERATION'
@@ -298,7 +327,8 @@ class Etablissement(AbstractModel):
 
 class Compte(AbstractModel):
     client = models.ForeignKey(Client,on_delete=models.CASCADE)
-    #etablissement = models.ForeignKey(Etablissement,on_delete=models.CASCADE)
+    etablissement = models.ForeignKey(Etablissement,on_delete=models.CASCADE,null=True,blank=True)
+    num_compte = models.CharField(max_length=25,null=True,blank=True)
     old_id = models.IntegerField(null=True, blank=True)
 
     class Meta:
@@ -373,3 +403,56 @@ class CategorieAction(AbstractModel):
 
     class Meta:
         db_table = 'CATEGORIE_ACTION'
+
+class Role(AbstractModel):
+    libelle = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    permissions = models.ManyToManyField(
+        'auth.Permission',
+        related_name='roles',
+        blank=True,
+    )
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'ROLE'
+
+class UserRole(AbstractModel):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    role = models.ForeignKey(Role, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'USER_ROLE'
+        unique_together = ('user', 'role')
+
+
+class JournalAudit(AbstractModel):
+    ACTION_CHOICES = [
+        ('CREATE', 'Création'),
+        ('UPDATE', 'Modification'),
+        ('DELETE', 'Suppression'),
+        ('VIEW', 'Consultation'),
+        ('LOGIN', 'Connexion'),
+        ('LOGOUT', 'Déconnexion'),
+        ('LOGIN_FAILED', 'Échec de connexion'),
+        ('EXPORT', 'Export de données'),
+    ]
+
+    user = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=20, choices=ACTION_CHOICES)
+    content_type = models.ForeignKey(ContentType, on_delete=models.SET_NULL, null=True, blank=True)
+    object_id = models.CharField(max_length=64, null=True, blank=True)
+    object_repr = models.CharField(max_length=255, null=True, blank=True)
+    changes = models.JSONField(null=True, blank=True)   # {"champ": ["ancienne", "nouvelle"]}
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.CharField(max_length=255, null=True, blank=True)
+
+    class Meta:
+        db_table = 'JOURNAL_AUDIT'
+        ordering = ['-created']
+
+    def __str__(self):
+        return f"{self.get_action_display()} - {self.object_repr} par {self.user}"

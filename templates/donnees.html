@@ -156,7 +156,7 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Ordres de bourse</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Saisir et traiter les ordres d'achat et de vente sur le marché.</p>
-				<a href="#" class="btn btn-sm btn-light-info fw-semibold w-100">
+				<a href="{% url 'mainapp:liste_operations' %}" class="btn btn-sm btn-light-info fw-semibold w-100">
 					Ouvrir
 					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
 						<span class="path1"></span>
@@ -212,7 +212,7 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Comptes d'actionnaires</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Générer automatiquement les comptes pour l'ensemble des actionnaires.</p>
-				<a href="#" class="btn btn-sm btn-light-danger fw-semibold w-100">
+				<a href="{% url 'mainapp:liste_comptes' %}" class="btn btn-sm btn-light-danger fw-semibold w-100">
 					Générer
 					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
 						<span class="path1"></span>

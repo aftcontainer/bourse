@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Rôle — {{ role.libelle }}{% endblock %}
+{% block titre_page %}Détails du rôle{% endblock %}
+{% block breadcrumb_active %}{{ role.libelle }}{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+
+	/* ---- Bannière rôle ---- */
+	.role-banner { display: flex; align-items: center; gap: 1.1rem; flex-wrap: wrap; }
+	.role-banner .icon-box {
+		width: 60px; height: 60px; border-radius: .85rem; flex-shrink: 0;
+		display: flex; align-items: center; justify-content: center;
+		background: var(--bs-light-primary); color: var(--bs-primary); font-size: 1.6rem;
+	}
+	.role-banner .name { font-weight: 700; font-size: 1.2rem; color: var(--bs-gray-800); }
+	.role-banner .desc { color: var(--bs-gray-500); }
+	.role-banner .meta-badges { margin-top: .4rem; display: flex; gap: .4rem; flex-wrap: wrap; }
+
+	.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; }
+	.info-item .info-label { font-size: .78rem; color: var(--bs-gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
+	.info-item .info-value { font-size: .95rem; color: var(--bs-gray-800); font-weight: 600; margin-top: .15rem; }
+
+	/* ---- Permissions accordées (lecture seule) ---- */
+	.perm-table-wrapper {
+		max-height: 480px;
+		overflow-y: auto;
+		border: 1px solid var(--bs-gray-200);
+		border-radius: .75rem;
+	}
+	table.perm-table-view { margin-bottom: 0; }
+	table.perm-table-view thead th {
+		position: sticky; top: 0; z-index: 2;
+		background: var(--bs-gray-100);
+		font-size: .82rem; font-weight: 700; color: var(--bs-gray-700);
+		text-align: center; vertical-align: middle;
+	}
+	table.perm-table-view thead th:first-child { text-align: left; padding-left: 1.1rem; }
+	table.perm-table-view tbody td { text-align: center; vertical-align: middle; }
+	table.perm-table-view tbody td:first-child { text-align: left; padding-left: 1.1rem; font-weight: 600; color: var(--bs-gray-800); }
+	.perm-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--bs-success); }
+	.perm-dot.off { background: var(--bs-gray-300); }
+
+	/* ---- Utilisateurs ayant ce rôle ---- */
+	.user-chip {
+		display: flex; align-items: center; gap: .7rem;
+		border: 1px solid var(--bs-gray-200); border-radius: .7rem;
+		padding: .6rem .85rem;
+	}
+	.user-chip .avatar {
+		width: 36px; height: 36px; border-radius: .55rem;
+		display: flex; align-items: center; justify-content: center;
+		background: var(--bs-primary); color: #fff; font-weight: 700; font-size: .8rem; flex-shrink: 0;
+	}
+	.user-chip .name { font-weight: 600; color: var(--bs-gray-800); font-size: .9rem; }
+	.user-chip .email { color: var(--bs-gray-500); font-size: .78rem; }
+	.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: .8rem; }
+</style>
+{% endblock %}
+
+{% block toolbar_actions %}
+	<a href="{% url 'mainapp:liste_roles' %}" class="btn btn-sm btn-light me-2">
+		<i class="ki-duotone ki-arrow-left fs-5 me-1"><span class="path1"></span><span class="path2"></span></i>
+		Retour à la liste
+	</a>
+	<a href="{% url 'mainapp:editer_role' public_id=role.public_id %}" class="btn btn-sm btn-primary">
+		<i class="ki-duotone ki-pencil fs-5 me-1"><span class="path1"></span><span class="path2"></span></i>
+		Modifier
+	</a>
+{% endblock %}
+
+{% block content %}
+
+	<!--begin::Section 1 — Informations du rôle-->
+	<div class="card-section p-7 mb-8">
+		<div class="section-title mb-6"><span class="num">1</span> Informations du rôle</div>
+
+		<div class="role-banner mb-8">
+			<div class="icon-box">
+				<i class="ki-duotone ki-shield-tick fs-1"><span class="path1"></span><span class="path2"></span></i>
+			</div>
+			<div>
+				<div class="name">{{ role.libelle }}</div>
+				{% if role.description %}
+					<div class="desc">{{ role.description }}</div>
+				{% endif %}
+				<div class="meta-badges">
+					{% if role.is_active %}
+						<span class="badge badge-light-success">Actif</span>
+					{% else %}
+						<span class="badge badge-light-danger">Inactif</span>
+					{% endif %}
+				</div>
+			</div>
+		</div>
+
+		<div class="info-grid">
+			<div class="info-item">
+				<div class="info-label">Identifiant public</div>
+				<div class="info-value">{{ role.public_id }}</div>
+			</div>
+			<div class="info-item">
+				<div class="info-label">Permissions accordées</div>
+				<div class="info-value">{{ role.permissions.count }}</div>
+			</div>
+			<div class="info-item">
+				<div class="info-label">Utilisateurs concernés</div>
+				<div class="info-value">{{ utilisateurs_du_role|length }}</div>
+			</div>
+			<div class="info-item">
+				<div class="info-label">Dernière mise à jour</div>
+				<div class="info-value">{{ role.updated|date:"d/m/Y H:i"|default:"—" }}</div>
+			</div>
+		</div>
+	</div>
+	<!--end::Section 1-->
+
+	<!--begin::Section 2 — Permissions accordées-->
+	<div class="card-section p-7 mb-8">
+		<div class="section-title mb-6"><span class="num">2</span> Permissions accordées</div>
+
+		<div class="perm-table-wrapper">
+			<table class="table table-row-bordered perm-table-view">
+				<thead>
+					<tr>
+						<th>Module</th>
+						<th style="width:90px;">Voir</th>
+						<th style="width:90px;">Ajouter</th>
+						<th style="width:90px;">Modifier</th>
+						<th style="width:90px;">Supprimer</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for module in permissions_du_role %}
+						<tr>
+							<td>{{ module.label }}</td>
+							<td><span class="perm-dot {% if not module.view %}off{% endif %}"></span></td>
+							<td><span class="perm-dot {% if not module.add %}off{% endif %}"></span></td>
+							<td><span class="perm-dot {% if not module.change %}off{% endif %}"></span></td>
+							<td><span class="perm-dot {% if not module.delete %}off{% endif %}"></span></td>
+						</tr>
+					{% empty %}
+						<tr>
+							<td colspan="5" class="text-center text-muted py-6">
+								Aucune permission accordée à ce rôle.
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+	<!--end::Section 2-->
+
+	<!--begin::Section 3 — Utilisateurs ayant ce rôle-->
+	<div class="card-section p-7 mb-2">
+		<div class="section-title mb-6"><span class="num">3</span> Utilisateurs ayant ce rôle</div>
+
+		<div class="user-grid">
+			{% for u in utilisateurs_du_role %}
+				<a href="{% url 'mainapp:details_utilisateur' public_id=u.public_id %}" class="user-chip text-decoration-none">
+					<div class="avatar">{{ u.first_name|slice:":1" }}{{ u.last_name|slice:":1" }}</div>
+					<div>
+						<div class="name">{{ u.last_name }} {{ u.first_name }}</div>
+						<div class="email">{{ u.email }}</div>
+					</div>
+				</a>
+			{% empty %}
+				<div class="text-muted py-6 text-center">Aucun utilisateur n'a ce rôle pour le moment.</div>
+			{% endfor %}
+		</div>
+	</div>
+	<!--end::Section 3-->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+{% endblock %}
+

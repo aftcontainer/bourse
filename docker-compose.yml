@@ -3,10 +3,45 @@ services:
     container_name: web-app
     build:
       context: .
-    restart: always
+    restart: unless-stopped
     ports:
       - 8004:8004
     env_file: .env
     volumes:
       - ./mainapp:/bourse/mainapp
       - .:/bourse
+  celery:
+    restart: always
+    build: .
+    command: celery -A core worker -l info
+    env_file:
+      - .env
+    depends_on:
+      - mains
+      - redis
+    volumes:
+      - ./mainapp:/bourse/mainapp
+      - .:/bourse
+  schedule:
+    restart: always
+    build: .
+    command: celery -A core beat -l info
+    env_file:
+      - .env
+    depends_on:
+      - mains
+      - redis
+    volumes:
+      - ./mainapp:/bourse/mainapp
+      - .:/bourse
+  redis:
+    image: redis:7.4-alpine
+    env_file:
+      - .env
+    environment:
+      - SMTP_SERVER=${SMTP_SERVER}
+      - SMTP_PORT=${SMTP_PORT}
+      - EMAIL_PASSWORD=${EMAIL_PASSWORD}
+      - SENDER_EMAIL=${SENDER_EMAIL}
+    expose:
+      - 6379

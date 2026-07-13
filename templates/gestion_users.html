@@ -96,9 +96,9 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Utilisateurs</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Générer les utilisateurs et les historiques de connexions.</p>
-				<a href="{% url 'mainapp:liste_utlisateurs' %}" class="btn btn-sm btn-light-info fw-semibold w-100">
-					Voir
-					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+				<a href="{% url 'mainapp:liste_utilisateurs' %}" class="btn btn-sm btn-light-info fw-semibold w-100">
+					Consulter
+					<i class="ki-duotone ki-shield-search fs-5 ms-1">
 						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
 					</i>
 				</a>
@@ -121,9 +121,34 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Roles</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Gere les roles et les permissions des utilisateurs.</p>
-				<a href="#" class="btn btn-sm btn-light-primary fw-semibold w-100">
-					Voir
-					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+				<a href="{% url 'mainapp:liste_roles' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Consulter
+					<i class="ki-duotone ki-shield-search fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Registre central-->
+
+	<!--begin::Registre central-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-primary);">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-primary">
+						<i class="ki-duotone ki-note fs-2x text-primary">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Audit du système</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Suivi des actions des utilisateurs</p>
+				<a href="{% url 'mainapp:journal_audit' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Consulter
+					<i class="ki-duotone ki-shield-search fs-5 ms-1">
 						<span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span>
 					</i>
 				</a>

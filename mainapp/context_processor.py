@@ -1,4 +1,4 @@
-from mainapp.forms import DeviseForm, QualiteForm, CategorieClientForm, TypeOperationForm, TypeTitreForm
+from mainapp.forms import DeviseForm, QualiteForm, CategorieClientForm, TypeOperationForm, TypeTitreForm, ResetEmailForm
 
 
 def devise_form(request):
@@ -15,3 +15,6 @@ def t_operation_form(request):
 
 def t_titre_form(request):
     return {"t_titre_form": TypeTitreForm()}
+
+def reset_email_form(request):
+    return {"reset_email_form": ResetEmailForm()}

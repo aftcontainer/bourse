@@ -1,7 +1,48 @@
+import os
+import smtplib
+import logging
+
 from django import forms
+from django.template import loader
+from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 from mainapp.models import Devise, Pays, TypePiece, TypeOperation, CategorieClient, Qualite, TypeTitre, Client, \
-    Titre, Operation, Etablissement, Ville, User, CategorieAction
+    Titre, Operation, Etablissement, Ville, User, CategorieAction, Role
+
+UserModel = get_user_model()
+logger = logging.getLogger("django.contrib.auth")
+from email.message import EmailMessage
+
+err_msg = {
+    "required": "Ce champ est obligatoire",
+    "invalid": "Veuillez saisir une adresse email correcte !"
+}
+
+CTRL   = "form-control"
+NUM    = "form-control num-input"
+CALC   = "form-control num-input is-computed"
+SELECT = "form-select"
+SELECT2 = "form-select"
+
+SENS_CHOICES = [
+    ("", "---------"),
+    ("V", "Vente de titres"),
+    ("A", "Achat de titres"),
+    ("T", "Transfert de titres")
+]
+
+OP_BEN_CHOICES = [
+    ("", "---------"),
+    (1, "Achat de titres"),
+    (2, "Vente de titres"),
+]
+
+
 
 
 class DeviseForm(forms.ModelForm):
@@ -249,12 +290,266 @@ class EtablissementForm(forms.ModelForm):
 class SignInForm(forms.Form):
     email = forms.EmailField(
         max_length=70,required=True,
-        widget=forms.EmailInput(attrs={'class': 'kt-input','placeholder': 'Nom d\'utilisateur'})
+        widget=forms.EmailInput(attrs={'class': 'form-control','placeholder': 'Nom d\'utilisateur'})
     )
-    user_password  = forms.CharField(
+    password  = forms.CharField(
         max_length=200,required=True,
         widget=forms.PasswordInput(attrs={
-            'placeholder': 'Mot de passe','name': 'user_password'
+            'placeholder': 'Mot de passe','name': 'user_password',
+            'class': 'form-control'
         })
     )
+
+class RoleForm(forms.ModelForm):
+    class Meta:
+        model = Role
+        fields = ['libelle', 'description', 'is_active']
+        widgets = {
+            'libelle': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.TextInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+
+
+class VenteEtTransfertForm(forms.ModelForm):
+    OPERATION_LIBELLE = "Vente de titres"
+    OPERATION_LIBELLE2 = "Transfert de titres"
+
+    class Meta:
+        model = Operation
+        fields = [
+            "etablissement", "titre",
+            "client", "beneficiaire","date_ordre",
+            "nbportef", "cours_operation", "nb_titre", "nbencours",
+            "brut", "montant", "commission", "tax", "css", "ircm",
+            "nbportefben","num_ordre","num_seq_ordre","code_op",
+            "etablissement_ben","tot_nbportebef","type_op"
+
+        ]
+        widgets = {
+            "etablissement": forms.Select(attrs={"class": SELECT2, "data-control": "select2"}),
+            "titre": forms.Select(attrs={"class": SELECT, "id": "id_titre"}),
+            "date_ordre": forms.DateInput(attrs={"class": CTRL, "type": "date"}),
+
+            "client": forms.Select(attrs={"class": SELECT2, "data-control": "select2","data-placeholder": "Rechercher un client..."}),
+
+            "nbportef": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
+            "cours_operation": forms.NumberInput(attrs={"class": NUM,"min": 10000}),
+            "nb_titre": forms.NumberInput(attrs={"class": NUM}),
+            "nbencours": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
+            "tot_nbportebef": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
+
+            "brut": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
+            "montant": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
+            "commission": forms.NumberInput(attrs={"class": NUM}),
+            "tax": forms.NumberInput(attrs={"class": NUM}),
+            "css": forms.NumberInput(attrs={"class": NUM, "step": "0.01"}),
+            "ircm": forms.NumberInput(attrs={"class": NUM}),
+
+            "beneficiaire": forms.Select(attrs={"class": SELECT2, "data-control": "select2","data-placeholder": "Rechercher un beneficiaire..."}),
+            "nbportefben": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
+            "etablissement_ben": forms.Select(attrs={"class": SELECT2, "data-control": "select2"}),
+
+            "num_ordre": forms.HiddenInput(),
+            "num_seq_ordre": forms.HiddenInput(),
+            "code_op": forms.HiddenInput(),
+        }
+        labels = {
+            "etablissement": "Donneur d'ordre",
+            "etablissement_ben": "Donneur d'ordre",
+            "titre": "Titre",
+            "client": "Vendeur",
+            "beneficiaire": "Beneficiaire",
+            "date_ordre": "Date de l'ordre",
+            "nbportef": "Titres en portefeuille",
+            "cours_operation": "Cours de cession",
+            "nb_titre": "Titres en transaction",
+            "nbencours": "Nombre total de titres",
+            "tot_nbportebef": "Nombre total de titres",
+            "brut": "Montant brut",
+            "montant": "Montant net",
+            "commission": "Montant commission",
+            "tax": "Montant TVA",
+            "css": "Montant CSS",
+            "ircm": "Montant IRCM",
+            "nbportefben": "Titres en portefeuille (beneficiaire)",
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["titre"].queryset = Titre.objects.all()
+        self.fields["client"].queryset = Client.objects.none()
+        self.fields["beneficiaire"].queryset = Client.objects.none()
+
+        etab_id = self._val("etablissement")
+        titre_id = self._val("titre")
+
+        if etab_id and titre_id:
+            self.fields["client"].queryset = Client.objects.filter(
+                portefeuille__etablissement_id=etab_id,
+                portefeuille__titre_id=titre_id,
+            ).distinct()
+
+        if etab_id and titre_id:
+            self.fields["beneficiaire"].queryset = Client.objects.filter(
+                portefeuille__etablissement_id=etab_id,
+                portefeuille__titre_id=titre_id,
+            ).distinct()
+
+    def _val(self, name):
+        if name in self.data:
+            try:
+                return int(self.data.get(name))
+            except (TypeError, ValueError):
+                return None
+        return getattr(self.instance, name + "_id", None)
+
+    def clean(self):
+        cleaned = super().clean()
+        cours = cleaned.get("cours_operation")
+        type_op = cleaned.get("type_op")
+        nb = cleaned.get("nb_titre")
+        portef = cleaned.get("nbportef")
+
+        if cours is not None and cours < 10000:
+            self.add_error("cours_operation", "Le cours de cession ne doit pas être inférieur à 10 000.")
+
+        if portef is not None and nb is not None:
+            if portef - nb < 0:
+                self.add_error("nb_titre",
+                               "Les titres en transaction (%d) dépassent le portefeuille (%d)." % (nb, portef))
+            else:
+                cleaned["nbencours"] = portef - nb
+
+        if cours and nb:
+            if type_op == 1:
+                taux = self.get_taux_vente()
+            elif type_op == 2:
+                taux = self.get_taux_transfert()
+            brut = cours * nb
+            commission = round(brut * taux["commission"])
+            tva = round(brut * taux["tva"])
+            ircm = round(brut * taux["ircm"])
+            css = round(brut * taux["css"], 2)
+            net = round(brut - commission - tva - ircm - css)
+
+            cleaned["brut"] = brut
+            cleaned["commission"] = commission
+            cleaned["tax"] = tva
+            cleaned["ircm"] = ircm
+            cleaned["css"] = css
+            cleaned["montant"] = net
+
+        return cleaned
+
+    def get_taux_vente(self):
+        op = TypeOperation.objects.filter(libelle=self.OPERATION_LIBELLE).first()
+        defaut = {"commission": 0.01, "tva": 0.18, "ircm": 0.20, "css": 0.01}
+        if not op:
+            return defaut
+
+        def frac(v):
+            return float(v) / 100 if v is not None else 0.0
+
+        return {
+            "commission": frac(op.commission),
+            "tva": frac(op.tva),
+            "ircm": frac(op.rcm),
+            "css": frac(op.css),
+        }
+
+    def get_taux_transfert(self):
+        op = TypeOperation.objects.filter(libelle=self.OPERATION_LIBELLE2).last()
+        defaut = {"commission": 0.00, "tva": 0.0, "ircm": 0.0, "css": 0.01}
+        if not op:
+            return defaut
+        def frac(v):
+            return float(v) / 100 if v is not None else 0.0
+
+        return {
+            "commission": frac(op.commission),
+            "tva": frac(op.tva),
+            "ircm": frac(op.rcm),
+            "css": frac(op.css),
+        }
+
+class CustomPasswordResetForm(PasswordResetForm):
+    def send_mail(self,
+        subject_template_name,
+        email_template_name,
+        context,
+        from_email,
+        to_email,
+        html_email_template_name=None,):
+
+        subject = loader.render_to_string(subject_template_name, context)
+        subject = "".join(subject.splitlines())
+        body = loader.render_to_string(email_template_name, context)
+
+        try:
+            msg = EmailMessage()
+            msg['From'] = from_email
+            msg['To'] = to_email
+            msg['Subject'] = subject
+            msg.add_alternative(body, subtype='html')
+
+            logger.info(f"Log: {from_email} envoyé")
+
+            with smtplib.SMTP(os.environ.get('SMTP_SERVER'), int(os.environ.get('SMTP_PORT'))) as server:
+                server.starttls()
+                server.login(os.environ.get('SENDER_EMAIL'), os.environ.get('EMAIL_PASSWORD'))
+                server.send_message(msg)
+
+                server.send_message(msg)
+                logger.info(f"Email envoyé avec succès.")
+        except:
+            logger.exception(
+                "Failed to send password reset email to %s", context["user"].pk
+            )
+
+
+    def save(self,domain_override=None,subject_template_name='registration/password_reset_subject.txt',
+             email_template_name='registration/password_reset_email.html',
+             use_https=False, token_generator=default_token_generator,
+             from_email=None, request=None, html_email_template_name=None,
+             extra_email_context=None):
+        email = self.cleaned_data["email"]
+        if not domain_override:
+            current_site = get_current_site(request)
+            site_name = current_site.name
+            domain = current_site.domain
+        else:
+            site_name = domain = domain_override
+
+        email_field_name = UserModel.get_email_field_name()
+        for user in self.get_users(email):
+            user_email = getattr(user, email_field_name)
+            context = {
+                "email": user_email,
+                "domain": domain,
+                "site_name": site_name,
+                "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                "user": user,
+                "token": token_generator.make_token(user),
+                "protocol": "https" if use_https else "http",
+                **(extra_email_context or {}),
+            }
+            self.send_mail(
+                subject_template_name,
+                email_template_name,
+                context,
+                from_email,
+                user_email,
+                html_email_template_name=html_email_template_name,
+            )
+
+class ResetEmailForm(forms.Form):
+    email = forms.EmailField(
+        max_length=70, error_messages=err_msg,
+        widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email"})
+    )
+
+
+
 

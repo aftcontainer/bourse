@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Détails du souscripteur{% endblock %}
+{% block titre_page %}Détails du souscripteur{% endblock %}
+{% block breadcrumb_active %}Détails{% endblock %}
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+
+	/* En-tête récapitulatif */
+	.detail-hero { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.detail-avatar {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 72px; height: 72px; border-radius: 1rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: 1.75rem; font-weight: 700; flex: 0 0 auto;
+	}
+
+	/* Couples libellé / valeur */
+	.detail-item { padding: .25rem 0; }
+	.detail-label {
+		color: var(--bs-gray-500); font-weight: 600;
+		font-size: .8rem; text-transform: uppercase; letter-spacing: .02em;
+		margin-bottom: .15rem;
+	}
+	.detail-value {
+		color: var(--bs-gray-900); font-weight: 600; font-size: 1.05rem;
+		word-break: break-word;
+	}
+	.detail-value a { color: var(--bs-primary); text-decoration: none; }
+	.detail-value a:hover { text-decoration: underline; }
+	.detail-value.empty { color: var(--bs-gray-400); font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block toolbar_actions %}
+	<a href="{% url 'mainapp:liste_clients' %}" class="btn btn-sm btn-light me-2">
+		<i class="ki-duotone ki-arrow-left fs-4"><span class="path1"></span><span class="path2"></span></i>
+		Retour
+	</a>
+	<a href="{% url 'mainapp:editer_souscripteur' obj.public_id  %}" class="btn btn-sm btn-primary">
+		<i class="ki-duotone ki-pencil fs-4"><span class="path1"></span><span class="path2"></span></i>
+		Modifier
+	</a>
+{% endblock %}
+
+{% block content %}
+	<div class="py-4 px-lg-6">
+
+		<!--begin::En-tête récapitulatif-->
+		<div class="detail-hero p-7 mb-8">
+			<div class="d-flex flex-wrap align-items-center gap-5">
+				<div class="detail-avatar">
+					{{ obj.nom_client|first|upper|default:"?" }}
+				</div>
+
+				<div class="flex-grow-1">
+					<div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+						<span class="fs-2 fw-bold text-gray-900">
+							{% if obj.qualite %}{{ obj.qualite }} {% endif %}{{ obj.nom_client }} {{ obj.prenom_client }}
+						</span>
+						{% if obj.exonerer_taxe %}
+							<span class="badge badge-light-success">Exonéré de taxe</span>
+						{% endif %}
+					</div>
+
+					<div class="d-flex flex-wrap gap-4 text-muted fw-semibold fs-6">
+						{% if obj.category_client %}
+							<span><i class="ki-duotone ki-profile-circle fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>{{ obj.category_client }}</span>
+						{% endif %}
+						{% if obj.email_client %}
+							<span><i class="ki-duotone ki-sms fs-5 me-1"><span class="path1"></span><span class="path2"></span></i><a href="mailto:{{ obj.email_client }}" class="text-muted">{{ obj.email_client }}</a></span>
+						{% endif %}
+						{% if obj.tel_client %}
+							<span><i class="ki-duotone ki-phone fs-5 me-1"><span class="path1"></span><span class="path2"></span></i>{{ obj.tel_client }}</span>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--end::En-tête récapitulatif-->
+
+		<!--begin::Section 1 — Informations du compte-->
+		<div class="card-section p-7 mb-8">
+			<div class="section-title mb-6"><span class="num">1</span> Informations du compte</div>
+
+			<div class="row gy-6">
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Établissement teneur du compte</div>
+					<div class="detail-value{% if not obj.banque %} empty{% endif %}">{{ obj.banque|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Compte identifiant</div>
+					<div class="detail-value{% if not obj.indentifiant %} empty{% endif %}">{{ obj.indentifiant|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Catégorie de client</div>
+					<div class="detail-value{% if not obj.category_client %} empty{% endif %}">{{ obj.category_client|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Catégorie d'action</div>
+					<div class="detail-value{% if not obj.ca_code %} empty{% endif %}">{{ obj.ca_code|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Numéro de compte espèces</div>
+					<div class="detail-value{% if not obj.num_compte %} empty{% endif %}">{{ obj.num_compte|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Matricule salarié</div>
+					<div class="detail-value{% if not obj.matricule %} empty{% endif %}">{{ obj.matricule|default:"—" }}</div>
+				</div>
+			</div>
+		</div>
+		<!--end::Section 1-->
+
+		<!--begin::Section 2 — Identité du souscripteur-->
+		<div class="card-section p-7 mb-8">
+			<div class="section-title mb-6"><span class="num">2</span> Identité du souscripteur</div>
+
+			<div class="row gy-6">
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Civilité</div>
+					<div class="detail-value{% if not obj.qualite %} empty{% endif %}">{{ obj.qualite|default:"—" }}</div>
+				</div>
+				<div class="col-md-8 detail-item">
+					<div class="detail-label">Nom ou Raison sociale</div>
+					<div class="detail-value{% if not obj.nom_client %} empty{% endif %}">{{ obj.nom_client|default:"—" }}</div>
+				</div>
+				<div class="col-md-12 detail-item">
+					<div class="detail-label">Prénoms</div>
+					<div class="detail-value{% if not obj.prenom_client %} empty{% endif %}">{{ obj.prenom_client|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Date de naissance</div>
+					<div class="detail-value{% if not obj.date_naissance %} empty{% endif %}">{{ obj.date_naissance|date:"d/m/Y"|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Lieu de naissance</div>
+					<div class="detail-value{% if not obj.lieu_naissance %} empty{% endif %}">{{ obj.lieu_naissance|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Nationalité</div>
+					<div class="detail-value{% if not obj.nationalite %} empty{% endif %}">{{ obj.nationalite|default:"—" }}</div>
+				</div>
+			</div>
+		</div>
+		<!--end::Section 2-->
+
+		<!--begin::Section 3 — Pièce d'identité-->
+		<div class="card-section p-7 mb-8">
+			<div class="section-title mb-6"><span class="num">3</span> Pièce d'identité</div>
+
+			<div class="row gy-6">
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Nature de pièce d'identité</div>
+					<div class="detail-value{% if not obj.type_piece %} empty{% endif %}">{{ obj.type_piece|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Numéro de pièce d'identité</div>
+					<div class="detail-value{% if not obj.num_carte %} empty{% endif %}">{{ obj.num_carte|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Nature de la carte</div>
+					<div class="detail-value{% if not obj.nature_carte %} empty{% endif %}">{{ obj.nature_carte|default:"—" }}</div>
+				</div>
+			</div>
+		</div>
+		<!--end::Section 3-->
+
+		<!--begin::Section 4 — Coordonnées-->
+		<div class="card-section p-7 mb-8">
+			<div class="section-title mb-6"><span class="num">4</span> Coordonnées</div>
+
+			<div class="row gy-6">
+				<div class="col-md-12 detail-item">
+					<div class="detail-label">Adresse / Complément d'adresse</div>
+					<div class="detail-value{% if not obj.adresse %} empty{% endif %}">{{ obj.adresse|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Résidence / Ville</div>
+					<div class="detail-value{% if not obj.ville %} empty{% endif %}">{{ obj.ville|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Boîte postale</div>
+					<div class="detail-value{% if not obj.bp_client %} empty{% endif %}">{{ obj.bp_client|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Téléphone</div>
+					<div class="detail-value{% if not obj.tel_client %} empty{% endif %}">
+						{% if obj.tel_client %}<a href="tel:{{ obj.tel_client }}">{{ obj.tel_client }}</a>{% else %}—{% endif %}
+					</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Numéro de fax</div>
+					<div class="detail-value{% if not obj.fax_client %} empty{% endif %}">{{ obj.fax_client|default:"—" }}</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Email</div>
+					<div class="detail-value{% if not obj.email_client %} empty{% endif %}">
+						{% if obj.email_client %}<a href="mailto:{{ obj.email_client }}">{{ obj.email_client }}</a>{% else %}—{% endif %}
+					</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Site web</div>
+					<div class="detail-value{% if not obj.site_client %} empty{% endif %}">
+						{% if obj.site_client %}<a href="{{ obj.site_client }}" target="_blank" rel="noopener">{{ obj.site_client }}</a>{% else %}—{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--end::Section 4-->
+
+		<!--begin::Section 5 — Paramètres commerciaux-->
+		<div class="card-section p-7 mb-2">
+			<div class="section-title mb-6"><span class="num">5</span> Paramètres commerciaux</div>
+
+			<div class="row gy-6">
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Taux de commission</div>
+					<div class="detail-value{% if obj.tx_commission is None %} empty{% endif %}">
+						{% if obj.tx_commission is not None %}{{ obj.tx_commission }} %{% else %}—{% endif %}
+					</div>
+				</div>
+				<div class="col-md-4 detail-item">
+					<div class="detail-label">Exonéré de taxe</div>
+					<div class="detail-value">
+						{% if obj.exonerer_taxe %}
+							<span class="badge badge-light-success">Oui</span>
+						{% else %}
+							<span class="badge badge-light">Non</span>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--end::Section 5-->
+
+	</div>
+{% endblock %}

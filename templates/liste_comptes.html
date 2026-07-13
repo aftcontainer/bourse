@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Comptes d'actionnaires{% endblock %}
+{% block titre_page %}Comptes d'actionnaires{% endblock %}
+{% block breadcrumb_active %}Comptes d'actionnaires{% endblock %}
+
+{% block toolbar_actions %}{% endblock %}
+
+{% block extra_css %}
+<style>
+	.devise-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.devise-search .form-control { padding-left: 2.75rem; }
+	.devise-search .search-icon {
+		position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+		color: var(--bs-gray-500); pointer-events: none;
+	}
+	.symbole-pill {
+		display: inline-flex; align-items: center; justify-content: center;
+		min-width: 34px; height: 34px; padding: 0 .5rem;
+		border-radius: .65rem; background: var(--bs-light-primary);
+		color: var(--bs-primary); font-weight: 700;
+	}
+</style>
+{% endblock %}
+
+{% block content %}
+	<!--begin::Card-->
+		<div class="card">
+			<!--begin::Card header-->
+			<div class="card-header border-0 pt-6">
+				<!--begin::Card title-->
+				<div class="card-title">
+					<!--begin::Search-->
+					<div class="d-flex align-items-center position-relative my-1">
+						<i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+						<input type="text" data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px ps-12" placeholder="Recherche..." />
+					</div>
+					<!--end::Search-->
+				</div>
+				<!--begin::Card title-->
+				<!--begin::Card toolbar-->
+				<div class="card-toolbar">
+					<!--begin::Group actions-->
+					<div class="d-flex justify-content-end align-items-center d-none" data-kt-subscription-table-toolbar="selected">
+						<div class="fw-bold me-5">
+						<span class="me-2" data-kt-subscription-table-select="selected_count"></span>Selected</div>
+						<button type="button" class="btn btn-danger" data-kt-subscription-table-select="delete_selected">Delete Selected</button>
+					</div>
+					<!--end::Group actions-->
+				</div>
+				<!--end::Card toolbar-->
+			</div>
+			<!--end::Card header-->
+			<!--begin::Card body-->
+			<div class="card-body pt-0">
+				<!--begin::Table-->
+				<table class="table align-middle table-row-dashed fs-6 gy-2" id="kt_clients_table">
+					<thead>
+						<tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+							<th class="min-w-125px">#</th>
+							<th class="min-w-125px">Nom actionnaire</th>
+							<th class="min-w-125px">Type titre</th>
+							<th class="min-w-125px">Etablissement</th>
+							<th class="min-w-125px">Nombre d'actions</th>
+							<th class="text-end min-w-70px">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="text-gray-600 fw-semibold">
+						{% for compte in comptes %}
+							<tr>
+								<td>{{ forloop.counter }}</td>
+								<td>{{ compte.client.nom_client }} {{ compte.client.prenom_client }}</td>
+								<td>{{ compte.titre.type_titre.libelle }}</td>
+								<td>{{compte.etablissement.libelle}}</td>
+								<td>{{compte.nb_titre}}</td>
+								<td class="text-end">
+                                    <a href="#" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"
+                                       data-bs-toggle="tooltip" title="Voir les détails">
+                                        <i class="ki-duotone ki-eye fs-4">
+                                           <span class="path1"></span>
+                                           <span class="path2"></span>
+                                           <span class="path3"></span>
+                                        </i>
+                                    </a>
+									<!--begin::Edit-->
+									<a href="#" class="btn btn-icon editBtn btn-light btn-active-light-primary btn-sm me-1"
+									   data-bs-toggle="tooltip" title="Modifier">
+										<i class="ki-duotone ki-pencil fs-4">
+											<span class="path1"></span>
+											<span class="path2"></span>
+										</i>
+									</a>
+									<!--end::Edit-->
+
+									<!--begin::Delete-->
+                                  {% comment %}
+									<a href="#" class="btn btn-icon btn-light btn-active-light-danger btn-sm deleteBtn"
+									   data-id="{{t_operation.id}}"
+									   data-bs-toggle="tooltip" title="Supprimer">
+										<i class="ki-duotone ki-trash fs-4">
+											<span class="path1"></span><span class="path2"></span><span class="path3"></span>
+											<span class="path4"></span><span class="path5"></span>
+										</i>
+									</a>
+                                  {% endcomment %}
+									<!--end::Delete-->
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+				<!--end::Table-->
+			</div>
+			<!--end::Card body-->
+		</div>
+	<!--end::Card-->
+	<!--end::Card-->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/scripts.bundle.js"></script>
+		<!--end::Global Javascript Bundle-->
+		<!--begin::Vendors Javascript(used for this page only)-->
+		<script src="{% static 'mainapp/plugins/custom/datatables/datatables.bundle.js' %}"></script>
+		<!--end::Vendors Javascript-->
+		<script src="{% static 'mainapp/js/custom/apps/subscriptions/list/list.js' %}"></script>
+		<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/utilities/modals/upgrade-plan.js' %}"></script>
+
+		<script src="{% static 'mainapp/plugins/notify-growl/js/rainbow.js' %}"></script>
+		<script src="{% static 'mainapp/plugins/notify-growl/js/sample.js' %}"></script>
+		<script src="{% static 'mainapp/plugins/notify-growl/js/jquery.growl.js' %}"></script>
+		<script src="{% static 'mainapp/plugins/notify-growl/js/notifIt.js' %}"></script>
+
+		<script src="{% static 'mainapp/js/custom/notifications.js' %}"></script>
+		<script src="{% static 'mainapp/js/custom/client.js' %}"></script>
+{% endblock %}

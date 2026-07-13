@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Attribuer des rôles — {{ utilisateur.first_name }} {{ utilisateur.last_name }}{% endblock %}
+{% block titre_page %}Attribuer des rôles{% endblock %}
+{% block breadcrumb_active %}{{ utilisateur.first_name }} {{ utilisateur.last_name }}{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+
+	/* ---- Fiche utilisateur fixée (lecture seule) ---- */
+	.user-fixed-card {
+		display: flex; align-items: center; gap: 1.1rem;
+		border: 1px solid var(--bs-gray-200); border-radius: .85rem;
+		padding: 1.1rem 1.25rem;
+		background: var(--bs-gray-100);
+	}
+	.user-fixed-card .avatar {
+		width: 52px; height: 52px; border-radius: .7rem; flex-shrink: 0;
+		display: flex; align-items: center; justify-content: center;
+		background: var(--bs-primary); color: #fff; font-weight: 700; font-size: 1.05rem;
+	}
+	.user-fixed-card .name { font-weight: 700; font-size: 1.05rem; color: var(--bs-gray-800); }
+	.user-fixed-card .email { color: var(--bs-gray-500); font-size: .88rem; }
+	.user-fixed-card .meta-badges { margin-top: .4rem; display: flex; gap: .4rem; flex-wrap: wrap; }
+	.user-fixed-card .meta-badges .badge { font-size: .72rem; }
+
+	/* ---- Rôles actuels (avant modification) ---- */
+	.current-roles { margin-top: .5rem; }
+	.current-roles .badge { font-size: .75rem; margin-right: .3rem; }
+
+	/* ---- Cartes de rôles à cocher ---- */
+	.role-search { max-width: 320px; }
+	.role-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		gap: .9rem;
+	}
+	.role-card {
+		border: 1px solid var(--bs-gray-200); border-radius: .85rem;
+		padding: 1rem 1.1rem; cursor: pointer;
+		transition: border-color .15s ease, background .15s ease;
+	}
+	.role-card:hover { border-color: var(--bs-primary); }
+	.role-card.checked {
+		border-color: var(--bs-primary);
+		background: var(--bs-light-primary);
+	}
+	.role-card .role-header {
+		display: flex; align-items: center; justify-content: space-between;
+		gap: .5rem;
+	}
+	.role-card .role-name { font-weight: 700; color: var(--bs-gray-800); }
+	.role-card .role-desc { font-size: .82rem; color: var(--bs-gray-500); margin-top: .35rem; }
+	.role-card .role-perm-count {
+		font-size: .72rem; font-weight: 700;
+		background: var(--bs-gray-200); color: var(--bs-gray-700);
+		border-radius: 2rem; padding: .15rem .55rem; margin-top: .5rem;
+		display: inline-block;
+	}
+	.role-card.d-none { display: none !important; }
+</style>
+{% endblock %}
+{% block toolbar_actions %}
+	<a href="{% url 'mainapp:liste_utilisateurs' %}" class="btn btn-sm btn-light">
+		<i class="ki-duotone ki-arrow-left fs-5 me-1"><span class="path1"></span><span class="path2"></span></i>
+		Retour à la liste
+	</a>
+{% endblock %}
+
+{% block content %}
+
+	<!--begin::Form d'attribution-->
+	<form method="post" action="">
+		{% csrf_token %}
+
+		{% if messages %}
+			<ul class="messages mb-6">
+				{% for message in messages %}
+					<li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+		<div class="modal-body py-8 px-lg-10">
+
+			<!--begin::Section 1 — Utilisateur (fixé par la vue, non modifiable)-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">1</span> Utilisateur concerné</div>
+
+				<div class="user-fixed-card">
+					<div class="avatar">
+						{{ utilisateur.first_name|slice:":1" }}{{ utilisateur.last_name|slice:":1" }}
+					</div>
+					<div>
+						<div class="name">{{ utilisateur.last_name }} {{ utilisateur.first_name }}</div>
+						<div class="email">{{ utilisateur.email }}</div>
+						<div class="meta-badges">
+							<span class="badge badge-light">{{ utilisateur.username }}</span>
+							{% if utilisateur.is_active %}
+								<span class="badge badge-light-success">Actif</span>
+							{% else %}
+								<span class="badge badge-light-danger">Inactif</span>
+							{% endif %}
+						</div>
+						<div class="current-roles">
+							<span class="label-hint fs-8">Rôles actuels :</span>
+							{% for r in roles_actuels %}
+								<span class="badge badge-light-primary">{{ r }}</span>
+							{% empty %}
+								<span class="text-muted fs-8">aucun rôle attribué</span>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+
+				<!-- Identifiant transmis tel quel à la vue, l'utilisateur n'est pas modifiable ici -->
+				<input type="hidden" name="user_id" value="{{ utilisateur.id }}">
+			</div>
+			<!--end::Section 1-->
+
+			<!--begin::Section 2 — Rôles à attribuer-->
+			<div class="card-section p-7 mb-2">
+				<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
+					<div class="section-title"><span class="num">2</span> Rôles à attribuer</div>
+					<span class="fw-bold text-primary" id="roleSelectedCount">0 rôle(s) sélectionné(s)</span>
+				</div>
+
+				<div class="mb-5">
+					<input type="text" id="roleSearch" class="form-control role-search"
+						   placeholder="Rechercher un rôle...">
+				</div>
+
+				<div class="role-grid" id="roleGrid">
+					{% for role in roles %}
+						<label class="role-card" data-role-name="{{ role.libelle|lower }}" for="role_{{ role.id }}">
+							<div class="role-header">
+								<span class="role-name">{{ role.libelle }}</span>
+								<input type="checkbox"
+									   class="form-check-input role-checkbox"
+									   name="roles"
+									   value="{{ role.id }}"
+									   id="role_{{ role.id }}"
+									   {% if role.id in selected_role_ids %}checked{% endif %}>
+							</div>
+							{% if role.description %}
+								<div class="role-desc">{{ role.description }}</div>
+							{% endif %}
+							<span class="role-perm-count">{{ role.permissions.count }} permission(s)</span>
+						</label>
+					{% empty %}
+						<div class="text-muted py-6 text-center">
+							Aucun rôle disponible. <a href="{% url 'mainapp:creer_role' %}">Créer un rôle</a> d'abord.
+						</div>
+					{% endfor %}
+				</div>
+			</div>
+			<!--end::Section 2-->
+
+		</div>
+
+		<!--begin::Footer-->
+		<div class="flex-center mt-8">
+			<button type="submit" class="btn btn-primary">
+				<span class="indicator-label">Enregistrer les attributions</span>
+			</button>
+		</div>
+		<!--end::Footer-->
+
+	</form>
+	<!--end::Form d'attribution-->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/attribuer_user_role.js' %}"></script>
+{% endblock %}
+

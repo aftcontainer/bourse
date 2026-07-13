@@ -85,7 +85,7 @@
 								<td>{{client.banque.libelle}}</td>
 								<td>{{client.ville}}</td>
 								<td class="text-end">
-                                    <a href="#" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"
+                                    <a href="{% url 'mainapp:details_souscripteur' client.public_id %}" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"
                                        data-bs-toggle="tooltip" title="Voir les détails">
                                         <i class="ki-duotone ki-eye fs-4">
                                            <span class="path1"></span>
@@ -94,7 +94,7 @@
                                         </i>
                                     </a>
 									<!--begin::Edit-->
-									<a href="#" class="btn btn-icon editBtn btn-light btn-active-light-primary btn-sm me-1"
+									<a href="{% url 'mainapp:editer_souscripteur' client.public_id %}" class="btn btn-icon editBtn btn-light btn-active-light-primary btn-sm me-1"
 									   data-bs-toggle="tooltip" title="Modifier">
 										<i class="ki-duotone ki-pencil fs-4">
 											<span class="path1"></span>

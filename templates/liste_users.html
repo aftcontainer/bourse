@@ -87,7 +87,7 @@
 								<td>{{user.username}}</td>
 								<td>{{user.email}}</td>
 								<td class="text-end">
-									<a href="#" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"
+									<a href="{% url 'mainapp:details_utilisateur' user.public_id %}" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"
                                        data-bs-toggle="tooltip" title="Voir les détails">
                                         <i class="ki-duotone ki-eye fs-4">
                                            <span class="path1"></span>

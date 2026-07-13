@@ -4,6 +4,18 @@
  * Copyright 2011-2025 The Bootstrap Authors
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
+ [data-kt-app-layout="dark-sidebar"] .app-sidebar {
+    background-color: #001051 !important;
+    border-right: 0 !important;
+ }
+    /* Zone du logo en haut du sidebar */
+ [data-kt-app-layout="dark-sidebar"] .app-sidebar .app-sidebar-logo {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+ }
+    /* Élément de menu actif : léger surlignage clair pour rester lisible sur le bleu */
+ [data-kt-app-layout="dark-sidebar"] .app-sidebar .menu-item .menu-link.active {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+ }
 :root,
 [data-bs-theme=light] {
   --bs-blue: #0d6efd;

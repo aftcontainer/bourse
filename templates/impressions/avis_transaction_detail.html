@@ -1,0 +1,607 @@
+{% load thousands_separator %}
+
+<head>
+<style>
+
+@page {
+    size: A4;
+    margin: 8mm 15mm 10mm 15mm;
+}
+
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
+
+
+
+/* HEADER */
+
+.header {
+
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    margin-bottom:10px;
+
+}
+
+
+.logo img {
+    width:120px;
+}
+
+
+.date {
+    font-size:10px;
+}
+
+
+
+
+
+/* TITRE */
+
+h1 {
+
+    text-align:center;
+    font-size:14px;
+    text-decoration:underline;
+    margin:5px 0 8px;
+
+}
+
+
+.exemplaire {
+
+    text-align:center;
+    font-size:11px;
+    font-weight:bold;
+    margin-bottom:12px;
+
+}
+
+
+
+
+
+/* INFORMATIONS CLIENT */
+
+.infos {
+
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:12px;
+
+}
+
+
+.infos td {
+
+    padding:3px 5px;
+
+}
+
+
+.label {
+
+    font-weight:bold;
+    width:35%;
+
+}
+
+
+
+
+
+
+
+/* RESUME OPERATION */
+
+.resume-operation {
+
+    width:100%;
+    border:1px solid #000;
+    border-collapse:collapse;
+    margin:12px 0;
+
+}
+
+
+.resume-operation td {
+
+    text-align:center;
+    padding:4px;
+    border:none;
+
+}
+
+
+.resume-operation tr:first-child td {
+
+    font-size:10px;
+
+}
+
+
+.resume-operation .valeurs td {
+
+    font-weight:bold;
+    font-size:11px;
+    padding-top:5px;
+
+}
+
+
+
+
+
+
+
+/* COMMISSIONS */
+
+.commission-table {
+
+    width:100%;
+    border:1px solid #000;
+    border-collapse:collapse;
+    margin-top:8px;
+
+}
+
+
+.commission-table td {
+
+    border:none;
+    padding:3px 8px;
+    font-size:10px;
+
+}
+
+
+.commission-table .taux {
+
+    text-align:center;
+    width:20%;
+
+}
+
+
+.commission-table .montant {
+
+    text-align:right;
+    width:25%;
+
+}
+
+
+.total-commission td {
+
+    font-weight:bold;
+    padding-top:5px;
+
+}
+
+
+
+
+
+
+
+
+/* TEXTE */
+
+.intro {
+
+    text-align:justify;
+    margin:10px 0;
+    line-height:1.3;
+
+}
+
+
+
+
+
+
+
+/* ZONE VIDE */
+
+.zone-vide {
+
+    width:100%;
+    height:45px;
+    border:1px solid #000;
+    border-collapse:collapse;
+    margin-top:10px;
+    margin-bottom:8px;
+
+}
+
+
+.zone-vide td {
+
+    height:45px;
+
+}
+
+
+
+
+
+
+
+/* COMPTE CLIENT */
+
+.debit-client {
+
+    width:100%;
+    border:1px solid #000;
+    border-collapse:collapse;
+
+}
+
+
+.debit-client td {
+
+    padding:5px;
+    font-size:10px;
+    font-weight:bold;
+
+}
+
+
+.debit-client .libelle {
+
+    text-align:left;
+
+}
+
+
+.debit-client .montant {
+
+    text-align:right;
+
+}
+
+
+
+
+
+.footer {
+
+    margin-top:15px;
+
+}
+
+
+.page {
+    page-break-after: always;
+}
+
+
+</style>
+</head>
+
+
+<body>
+
+
+<div class="header">
+
+    <div class="logo">
+        <img src="{{ logo_url }}">
+    </div>
+
+
+    <div class="date">
+        Libreville, le {{ avis.date }}
+    </div>
+
+</div>
+
+
+
+<h1>
+    AVIS DE TRANSACTION
+</h1>
+
+
+
+<div class="exemplaire">
+
+    {{ exemplaire }}
+
+</div>
+
+
+
+
+
+<table class="infos">
+
+
+<tr>
+
+<td class="label">
+Nom du client
+</td>
+
+
+<td>
+{{ avis.transac.client.nom_client }}
+{{ avis.transac.client.prenom_client }}
+</td>
+
+
+</tr>
+
+
+
+<tr>
+
+<td class="label">
+Numéro client
+</td>
+
+
+<td>
+{{ avis.transac.client.numero_client }}
+</td>
+
+
+</tr>
+
+
+
+<tr>
+
+<td class="label">
+Numéro de compte
+</td>
+
+
+<td>
+{% if client.num_compte %}
+    {{ avis.client.num_compte|default:"-" }}
+{% else %}
+    -
+{% endif %}
+</td>
+
+
+</tr>
+
+
+</table>
+
+
+
+
+
+
+
+<table class="resume-operation">
+
+
+<tr>
+
+<td>
+Montant de l'opération
+</td>
+
+
+<td>
+Nombre d'actions
+</td>
+
+
+<td>
+Total
+</td>
+
+
+</tr>
+
+
+
+
+<tr class="valeurs">
+
+
+<td>
+{{ avis.lignes.2.valeur|intpoint }}
+</td>
+
+
+<td>
+{{ avis.lignes.0.valeur|intpoint }}
+</td>
+
+
+<td>
+{{ avis.lignes.1.valeur|intpoint }} FCFA
+</td>
+
+
+</tr>
+
+
+</table>
+
+
+
+
+
+
+
+<p class="intro">
+
+Nous avons l'honneur de vous faire connaître que nous inscrivons
+au <strong>{{ sens_compte }}</strong> de votre compte le montant de
+l'opération ci-dessous exécutée ce jour selon vos instructions.
+
+</p>
+
+
+
+
+
+
+
+
+<table class="commission-table">
+
+
+<tr>
+
+<td>
+Commission AFG BANK HT
+</td>
+
+
+<td class="taux">
+{{ avis.transac.type_operation.commission }}%
+</td>
+
+
+<td class="montant">
+{{ avis.lignes.3.valeur|intpoint }} FCFA
+</td>
+
+
+</tr>
+
+
+
+
+<tr>
+
+<td>
+TVA
+</td>
+
+
+<td class="taux">
+{{ avis.transac.type_operation.tva }}%
+</td>
+
+
+<td class="montant">
+{{ avis.lignes.4.valeur|intpoint }} FCFA
+</td>
+
+
+</tr>
+
+
+
+
+
+<tr>
+
+<td>
+CSS
+</td>
+
+
+<td class="taux">
+{{ avis.transac.type_operation.css }}%
+</td>
+
+
+<td class="montant">
+{{ avis.lignes.5.valeur|intpoint }} FCFA
+</td>
+
+
+</tr>
+
+
+
+
+
+<tr class="total-commission">
+
+
+<td>
+Commission AFG BANK TTC
+</td>
+
+
+<td></td>
+
+
+<td class="montant">
+{{ avis.lignes.6.valeur|intpoint }} FCFA
+</td>
+
+
+</tr>
+
+
+</table>
+
+
+
+
+
+
+
+<table class="zone-vide">
+
+<tr>
+<td></td>
+</tr>
+
+</table>
+
+
+
+
+
+
+
+<table class="debit-client">
+
+<tr>
+
+
+<td class="libelle">
+
+Crédit compte client
+
+</td>
+
+
+
+<td class="montant">
+
+{{ avis.lignes.7.valeur|intpoint }} FCFA
+
+</td>
+
+
+</tr>
+
+
+</table>
+
+
+
+
+
+
+<p class="footer">
+
+{{ avis.message_footer }}
+
+</p>
+
+
+
+</body>

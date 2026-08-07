@@ -204,7 +204,7 @@
 				<ul class="pagination justify-content-end">
 					{% if logs.has_previous %}
 						<li class="page-item">
-							<a class="page-link" href="?{{ request.GET.urlencode }}&page={{ logs.previous_page_number }}">Précédent</a>
+							<a class="page-link" href="{{ request.path }}?{{ querystring }}&page={{ logs.previous_page_number }}">Précédent</a>
 						</li>
 					{% endif %}
 					<li class="page-item disabled">
@@ -212,7 +212,7 @@
 					</li>
 					{% if logs.has_next %}
 						<li class="page-item">
-							<a class="page-link" href="?{{ request.GET.urlencode }}&page={{ logs.next_page_number }}">Suivant</a>
+							<a class="page-link" href="{{ request.path }}?{{ querystring }}&page={{ logs.next_page_number }}">Suivant</a>
 						</li>
 					{% endif %}
 				</ul>
@@ -247,69 +247,3 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {% endblock %}
-
-{# =====================================================================
-   NOTES D'INTÉGRATION CÔTÉ VUE (Django)
-   =====================================================================
-
-   from django.core.paginator import Paginator
-   from django.shortcuts import render
-
-   from .models import JournalAudit, User
-
-
-   def journal_audit(request):
-       logs_qs = JournalAudit.objects.select_related('user', 'content_type').order_by('-created')
-
-       action = request.GET.get('action')
-       if action:
-           logs_qs = logs_qs.filter(action=action)
-
-       user_id = request.GET.get('user')
-       if user_id:
-           logs_qs = logs_qs.filter(user_id=user_id)
-
-       model_name = request.GET.get('model')
-       if model_name:
-           logs_qs = logs_qs.filter(content_type__model=model_name)
-
-       q = request.GET.get('q')
-       if q:
-           logs_qs = logs_qs.filter(object_repr__icontains=q)
-
-       date_debut = request.GET.get('date_debut')
-       if date_debut:
-           logs_qs = logs_qs.filter(created__date__gte=date_debut)
-
-       date_fin = request.GET.get('date_fin')
-       if date_fin:
-           logs_qs = logs_qs.filter(created__date__lte=date_fin)
-
-       paginator = Paginator(logs_qs, 50)
-       page_number = request.GET.get('page', 1)
-       logs = paginator.get_page(page_number)
-
-       context = {
-           'logs': logs,
-           'action_choices': JournalAudit.ACTION_CHOICES,
-           'utilisateurs': User.objects.all().order_by('last_name', 'first_name'),
-           'modeles': (
-               JournalAudit.objects
-               .exclude(content_type__isnull=True)
-               .values_list('content_type__model', flat=True)
-               .distinct()
-               .order_by('content_type__model')
-           ),
-       }
-       return render(request, 'mainapp/journal_audit.html', context)
-
-
-   urls.py :
-       path('journal-audit/', views.journal_audit, name='journal_audit'),
-
-   Rappel : le champ `changes` (JSONField) attendu par le template est au
-   format {"nom_champ": ["ancienne_valeur", "nouvelle_valeur"], ...}.
-   Si vous utilisez django-auditlog, adaptez log.changes en conséquence
-   (son format diffère légèrement — voir LogEntry.changes_dict).
-
-===================================================================== #}

@@ -44,13 +44,13 @@
 
   .form-label { font-weight: 500; font-size: .88rem; color: var(--ink); }
   .input-group-text { background: #fff; border-right: 0; color: var(--muted); border-radius: 12px 0 0 12px; }
-  .form-control { border-left: 0; border-radius: 0 12px 12px 0; padding: .7rem .9rem; font-size: .95rem; }
+  .form-control { border-radius: 0 12px 12px 0; padding: .7rem .9rem; font-size: .95rem; }
   .form-control:focus { border-color: var(--afg-green); box-shadow: none; }
   .input-group:focus-within { box-shadow: 0 0 0 4px rgba(0,166,81,0.12); border-radius: 12px; }
   .input-group:focus-within .input-group-text,
   .input-group:focus-within .form-control { border-color: var(--afg-green); }
 
-  .pw-toggle { border: 1px solid #ced4da; border-left: 0; background: #fff; color: var(--muted); border-radius: 0 12px 12px 0; }
+  .pw-toggle { border: 1px solid #ced4da; background: #fff; color: var(--muted); border-radius: 0 12px 12px 0; }
   .pw-toggle:hover { color: var(--afg-green); }
   .pw-field .form-control { border-radius: 0; }
 

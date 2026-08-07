@@ -4,15 +4,16 @@ import logging
 
 from django import forms
 from django.template import loader
-from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth import get_user_model, password_validation
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
+from django.utils.safestring import mark_safe
 
 from mainapp.models import Devise, Pays, TypePiece, TypeOperation, CategorieClient, Qualite, TypeTitre, Client, \
-    Titre, Operation, Etablissement, Ville, User, CategorieAction, Role
+    Titre, Operation, Etablissement, Ville, User, CategorieAction, Role, Portefeuille
 
 UserModel = get_user_model()
 logger = logging.getLogger("django.contrib.auth")
@@ -285,7 +286,23 @@ class EtablissementForm(forms.ModelForm):
             'logo': forms.ClearableFileInput(attrs={'class': 'form-control'})
         }
 
-
+class PortefeuilleForm(forms.ModelForm):
+    class Meta:
+        model = Portefeuille
+        fields = ["etablissement", "titre"]
+        widgets = {
+            "etablissement": forms.Select(attrs={
+                "class": "form-select form-select-solid",
+                "data-control": "select2",
+            }),
+            "titre": forms.Select(attrs={
+                "class": "form-select form-select-solid",
+            }),
+        }
+        labels = {
+            "etablissement": "Établissement",
+            "titre": "Titre",
+        }
 
 class SignInForm(forms.Form):
     email = forms.EmailField(
@@ -312,8 +329,9 @@ class RoleForm(forms.ModelForm):
 
 
 class VenteEtTransfertForm(forms.ModelForm):
-    OPERATION_LIBELLE = "Vente de titres"
+    OPERATION_LIBELLE = "Achat de titres"
     OPERATION_LIBELLE2 = "Transfert de titres"
+    type_operation = forms.ModelChoiceField(queryset=TypeOperation.objects.order_by('libelle'),required=False)
 
     class Meta:
         model = Operation
@@ -323,7 +341,7 @@ class VenteEtTransfertForm(forms.ModelForm):
             "nbportef", "cours_operation", "nb_titre", "nbencours",
             "brut", "montant", "commission", "tax", "css", "ircm",
             "nbportefben","num_ordre","num_seq_ordre","code_op",
-            "etablissement_ben","tot_nbportebef","type_op"
+            "etablissement_ben","tot_nbportebef",'type_operation'
 
         ]
         widgets = {
@@ -367,7 +385,7 @@ class VenteEtTransfertForm(forms.ModelForm):
             "nbencours": "Nombre total de titres",
             "tot_nbportebef": "Nombre total de titres",
             "brut": "Montant brut",
-            "montant": "Montant net",
+            "montant": "Débit compte client",
             "commission": "Montant commission",
             "tax": "Montant TVA",
             "css": "Montant CSS",
@@ -382,8 +400,9 @@ class VenteEtTransfertForm(forms.ModelForm):
         self.fields["client"].queryset = Client.objects.none()
         self.fields["beneficiaire"].queryset = Client.objects.none()
 
-        etab_id = self._val("etablissement")
         titre_id = self._val("titre")
+        etab_id = self._val("etablissement")
+        etab_ben_id = self._val("etablissement_ben")
 
         if etab_id and titre_id:
             self.fields["client"].queryset = Client.objects.filter(
@@ -391,10 +410,9 @@ class VenteEtTransfertForm(forms.ModelForm):
                 portefeuille__titre_id=titre_id,
             ).distinct()
 
-        if etab_id and titre_id:
+        if etab_ben_id and titre_id:
             self.fields["beneficiaire"].queryset = Client.objects.filter(
-                portefeuille__etablissement_id=etab_id,
-                portefeuille__titre_id=titre_id,
+                banque_id=etab_ben_id
             ).distinct()
 
     def _val(self, name):
@@ -403,12 +421,20 @@ class VenteEtTransfertForm(forms.ModelForm):
                 return int(self.data.get(name))
             except (TypeError, ValueError):
                 return None
+        # NOUVEAU : on tient compte des valeurs passées via initial=
+        # (cas de l'arrivée depuis la page détail du portefeuille)
+        if self.initial.get(name):
+            try:
+                val = self.initial.get(name)
+                return val.pk if hasattr(val, "pk") else int(val)
+            except (TypeError, ValueError):
+                return None
         return getattr(self.instance, name + "_id", None)
 
     def clean(self):
         cleaned = super().clean()
         cours = cleaned.get("cours_operation")
-        type_op = cleaned.get("type_op")
+        type_operation = cleaned.get("type_operation") or self.instance.type_operation
         nb = cleaned.get("nb_titre")
         portef = cleaned.get("nbportef")
 
@@ -417,22 +443,21 @@ class VenteEtTransfertForm(forms.ModelForm):
 
         if portef is not None and nb is not None:
             if portef - nb < 0:
-                self.add_error("nb_titre",
-                               "Les titres en transaction (%d) dépassent le portefeuille (%d)." % (nb, portef))
+                self.add_error("nb_titre","Les titres en transaction (%d) dépassent le portefeuille (%d)." % (nb, portef))
             else:
                 cleaned["nbencours"] = portef - nb
 
         if cours and nb:
-            if type_op == 1:
+            if type_operation.libelle in ("Achat de titres", "Vente de titres"):
                 taux = self.get_taux_vente()
-            elif type_op == 2:
+            elif type_operation.libelle == 'Transfert de titres':
                 taux = self.get_taux_transfert()
             brut = cours * nb
             commission = round(brut * taux["commission"])
-            tva = round(brut * taux["tva"])
-            ircm = round(brut * taux["ircm"])
-            css = round(brut * taux["css"], 2)
-            net = round(brut - commission - tva - ircm - css)
+            tva = round(commission * taux["tva"])
+            ircm = round(commission * taux["ircm"])
+            css = round(commission * taux["css"], 2)
+            net = round(brut + commission + tva + ircm + css)
 
             cleaned["brut"] = brut
             cleaned["commission"] = commission
@@ -445,7 +470,7 @@ class VenteEtTransfertForm(forms.ModelForm):
 
     def get_taux_vente(self):
         op = TypeOperation.objects.filter(libelle=self.OPERATION_LIBELLE).first()
-        defaut = {"commission": 0.01, "tva": 0.18, "ircm": 0.20, "css": 0.01}
+        defaut = {"commission": 0.01, "tva": 0.18, "ircm": 0.0, "css": 0.01}
         if not op:
             return defaut
 
@@ -461,7 +486,7 @@ class VenteEtTransfertForm(forms.ModelForm):
 
     def get_taux_transfert(self):
         op = TypeOperation.objects.filter(libelle=self.OPERATION_LIBELLE2).last()
-        defaut = {"commission": 0.00, "tva": 0.0, "ircm": 0.0, "css": 0.01}
+        defaut = {"commission": 0.00, "tva": 0.0, "ircm": 0.0, "css": 0.0}
         if not op:
             return defaut
         def frac(v):
@@ -550,6 +575,30 @@ class ResetEmailForm(forms.Form):
         widget=forms.EmailInput(attrs={"class": "form-control", "placeholder": "Email"})
     )
 
+class SetPasswordForm(SetPasswordForm):
+    error_messages = {
+        "password_mismatch": "Les mots de passes ne sont pas identiques.",
+    }
+    new_password1 = forms.CharField(
+        label="Nouveau mot de passe",
+        widget=forms.PasswordInput(attrs={"autocomplete": "Nouveau mot de passe", "class": "form-control"}),
+        strip=False,
+        help_text=mark_safe(
+            """
+                <ul>
+                    <li>Au moins 8 caractères.</li>
+                    <li>Eviter les infos personnelles</li>
+                    <li>Ne doit pas être un mot de passe courant.</li>
+                    <li>Ne doit pas être composé uniquement de chiffres.</li>
+                </ul>
+            """
+        ),
+    )
+    new_password2 = forms.CharField(
+        label= "Confirmation de mot de passe",
+        strip=False,
+        widget=forms.PasswordInput(attrs={"autocomplete": "Nouveau mot de passe", "class": "form-control"}),
+    )
 
 
 

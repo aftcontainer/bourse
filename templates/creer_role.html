@@ -55,6 +55,19 @@
 		border-radius: 2rem;
 		padding: .25rem .65rem;
 	}
+
+	/* ---- Colonne "Autres" (permissions custom) ---- */
+	.custom-perms-cell {
+		display: flex; flex-direction: column; align-items: flex-start;
+		gap: .35rem; text-align: left; padding-left: .75rem;
+	}
+	.custom-perms-cell .form-check {
+		margin: 0; display: flex; align-items: center; gap: .35rem;
+	}
+	.custom-perms-cell .form-check-label {
+		font-size: .78rem; font-weight: 500; color: var(--bs-gray-700);
+		white-space: normal;
+	}
 </style>
 {% endblock %}
 {% block toolbar_actions %}{% endblock %}
@@ -118,6 +131,7 @@
 								<th style="width:100px;">Ajouter</th>
 								<th style="width:100px;">Modifier</th>
 								<th style="width:100px;">Supprimer</th>
+								<th style="width:180px;">Autres</th>
 								<th style="width:70px;">Tout</th>
 							</tr>
 						</thead>
@@ -179,6 +193,24 @@
 									{% endwith %}
 
 									<td>
+										{% if module.custom_perms %}
+											<div class="custom-perms-cell">
+												{% for perm in module.custom_perms %}
+													<div class="form-check">
+														<input type="checkbox" class="form-check-input perm-checkbox"
+															   name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+															   data-row="{{ forloop.parentloop.counter0 }}"
+															   {% if perm.id in selected_permission_ids %}checked{% endif %}>
+														<label class="form-check-label" for="perm_{{ perm.id }}">{{ perm.name }}</label>
+													</div>
+												{% endfor %}
+											</div>
+										{% else %}
+											<span class="text-muted">—</span>
+										{% endif %}
+									</td>
+
+									<td>
 										<input type="checkbox" class="form-check-input model-row-toggle"
 											   data-row="{{ forloop.counter0 }}"
 											   title="Sélectionner toutes les permissions de ce module">
@@ -186,7 +218,7 @@
 								</tr>
 							{% empty %}
 								<tr>
-									<td colspan="6" class="text-center text-muted py-6">
+									<td colspan="7" class="text-center text-muted py-6">
 										Aucun module de permission disponible.
 									</td>
 								</tr>

@@ -5,6 +5,7 @@ from django.contrib.auth.models import PermissionsMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
+from django.db.models import Sum, Count
 from django.http import Http404
 
 from mainapp.abstract.models import AbstractModel
@@ -61,6 +62,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
+
+    created_by = models.IntegerField(null=True,blank=True)
+    updated_by = models.IntegerField(null=True,blank=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -148,6 +152,11 @@ class TypeOperation(AbstractModel):
 class CategorieClient(AbstractModel):
     libelle = models.CharField(max_length=100,null=True,blank=True)
     old_id = models.IntegerField(null=True, blank=True)
+    nom_creat = models.CharField(max_length=30,null=True,blank=True)
+    date_creat = models.DateField(null=True,blank=True)
+    date_modif = models.DateField(null=True,blank=True)
+    nom_modif = models.CharField(max_length=30,null=True,blank=True)
+
 
     def __str__(self):
         return self.libelle
@@ -170,6 +179,10 @@ class Qualite(AbstractModel):
 class TypeTitre(AbstractModel):
     libelle = models.CharField(max_length=50)
     old_id = models.IntegerField(null=True, blank=True)
+    nom_creat = models.CharField(max_length=50,null=True,blank=True)
+    date_creat = models.DateField(null=True,blank=True)
+    nom_modif = models.CharField(max_length=50,null=True,blank=True)
+    date_modif = models.DateField(null=True,blank=True)
 
     def __str__(self):
         return self.libelle
@@ -183,9 +196,9 @@ class Client(AbstractModel):
     prenom_client = models.CharField(max_length=100,null=True,blank=True)
     adresse = models.CharField(max_length=200,null=True,blank=True)
     nationalite = models.CharField(max_length=50,null=True,blank=True)
-    bp_client = models.CharField(max_length=10,null=True,blank=True)
+    bp_client = models.CharField(max_length=50,null=True,blank=True)
     ville = models.CharField(max_length=50,null=True,blank=True)
-    tel_client = models.CharField(max_length=15,null=True,blank=True)
+    tel_client = models.CharField(max_length=50,null=True,blank=True)
     fax_client = models.CharField(max_length=20,null=True,blank=True)
     tx_commission = models.FloatField(default=0.0,null=True,blank=True)
     exonerer_taxe = models.CharField(max_length=10,null=True,blank=True)
@@ -197,7 +210,7 @@ class Client(AbstractModel):
     num_compte = models.CharField(max_length=50,null=True,blank=True)
     qualite = models.ForeignKey(Qualite,on_delete=models.SET_NULL,null=True,blank=True)
     pays = models.ForeignKey(Pays,on_delete=models.SET_NULL,null=True,blank=True)
-    email_client = models.EmailField(max_length=50)
+    email_client = models.EmailField(max_length=50,null=True,blank=True)
     type_piece = models.ForeignKey(TypePiece,null=True,blank=True,on_delete=models.SET_NULL)
     site_client = models.CharField(max_length=100,null=True,blank=True)
     nature_carte = models.CharField(max_length=30,null=True,blank=True)
@@ -211,6 +224,18 @@ class Client(AbstractModel):
 
     def __str__(self):
         return f'{self.nom_client} {self.prenom_client}'
+
+    def donnees_actions(self):
+        return Portefeuille.objects.filter(client=self).aggregate(tot_actions=Sum('nb_titre'),tot_titres=Sum('titre'))
+
+    def index(self):
+        return IndexTitre.objects.filter(client=self)
+
+    def numero_client(self):
+        return str(self.id).zfill(8)
+
+    def portefeuilles(self):
+        return Portefeuille.objects.filter(client=self)
 
     class Meta:
         db_table = 'CLIENT'
@@ -248,14 +273,29 @@ class Titre(AbstractModel):
     class Meta:
         db_table = 'Titre'
 
+    @property
+    def actions(self):
+        compte_dict =  Portefeuille.objects.filter(titre=self).aggregate(nb_actions=Sum('nb_titre'))
+        return compte_dict['nb_actions']
+
+    @property
+    def nb_clients(self):
+        client_dict = Portefeuille.objects.filter(titre=self).aggregate(nb_clients=Count('client'))
+        return client_dict['nb_clients']
+
+    def comptes(self):
+        return Portefeuille.objects.filter(titre=self).order_by('client__nom_client')
+
+
+
 #A revoir - Cette classe peut etre etre remplacé par
 class Operation(AbstractModel):
     etablissement = models.ForeignKey('Etablissement',on_delete=models.CASCADE,null=True,blank=True)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE,null=True,blank=True)
     type_titre = models.ForeignKey(TypeTitre,on_delete=models.DO_NOTHING,null=True,blank=True)
     titre = models.ForeignKey(Titre,on_delete=models.CASCADE,null=True,blank=True)
     num_ordre = models.IntegerField()
-    num_seq_ordre = models.PositiveIntegerField()
+    num_seq_ordre = models.PositiveIntegerField(null=True,blank=True)
     nb_titre = models.IntegerField()
     sens = models.CharField(max_length=5,null=True,blank=True)
     cours_operation = models.IntegerField()
@@ -264,7 +304,7 @@ class Operation(AbstractModel):
     montant = models.PositiveIntegerField(null=True,blank=True)
     commission = models.PositiveIntegerField(null=True,blank=True)
     tax = models.PositiveIntegerField(null=True,blank=True)
-    ordre_valide = models.CharField(max_length=5,null=True,blank=True)
+    ordre_valide = models.CharField(max_length=70,null=True,blank=True)
     ordre_ben = models.CharField(max_length=5,null=True,blank=True)
     old_id_ben = models.IntegerField(null=True,blank=True)
     old_id_ets_ben = models.IntegerField(null=True,blank=True)
@@ -285,10 +325,23 @@ class Operation(AbstractModel):
     nom_creat = models.CharField(max_length=30,null=True,blank=True)
     nom_modif = models.CharField(max_length=30,null=True,blank=True)
     est_valide = models.BooleanField(default=False)
-    type_op = models.IntegerField(null=True,blank=True)
+    type_operation = models.ForeignKey(TypeOperation,null=True,blank=True,on_delete=models.SET_NULL)
 
     class Meta:
         db_table = 'OPERATION'
+
+        managed = False
+        permissions = [
+            ("imp_avis_transaction", "Peut imprimer avis de transaction")
+        ]
+
+    def creer_par(self):
+        user_id = self.user_id
+        try:
+            user = User.objects.get(id=user_id)
+            return user
+        except:
+            return None
 
 
 class Etablissement(AbstractModel):
@@ -347,6 +400,13 @@ class Portefeuille(AbstractModel):
     date_modif = models.DateField(null=True, blank=True)
     old_id = models.IntegerField(null=True, blank=True)
 
+    def index(self):
+        return IndexTitre.objects.filter(client=self.client,etablissement=self.etablissement,titre=self.titre)
+
+    def __str__(self):
+        return self.titre.libelle
+
+
     class Meta:
         db_table = 'PORTEFEUILLE'
 
@@ -375,7 +435,7 @@ class IndexTitre(AbstractModel):
     client = models.ForeignKey(to='client', on_delete=models.CASCADE, null=True, blank=True)
     etablissement = models.ForeignKey(to='etablissement', on_delete=models.CASCADE,null=True,blank=True)
     titre = models.ForeignKey(to='Titre', on_delete=models.CASCADE,null=True,blank=True)
-    nb_titre = models.IntegerField(null=True,blank=True)
+    #nb_titre = models.IntegerField(null=True,blank=True)
     debut_index = models.IntegerField()
     fin_index = models.IntegerField()
     statut_tire = models.IntegerField(default=1)
@@ -385,6 +445,11 @@ class IndexTitre(AbstractModel):
     date_modif = models.DateField(null=True, blank=True)
     indordre = models.IntegerField(null=True, blank=True)
     old_id = models.IntegerField(null=True,blank=True)
+
+    @property
+    def quantite(self):
+        return self.fin_index - self.debut_index + 1
+
 
     class Meta:
         db_table = 'INDEXTITRE'
@@ -456,3 +521,20 @@ class JournalAudit(AbstractModel):
 
     def __str__(self):
         return f"{self.get_action_display()} - {self.object_repr} par {self.user}"
+
+
+# class EmissionTitre(models.Model):
+#
+#     titre = models.ForeignKey(Titre,on_delete=models.CASCADE)
+#
+#     numero_emission = models.IntegerField()
+#
+#     debut_index = models.IntegerField()
+#
+#     fin_index = models.IntegerField()
+#
+#     nb_titre = models.IntegerField()
+#
+#     date_emission = models.DateField()
+#
+#     type_emission = models.CharField(...)

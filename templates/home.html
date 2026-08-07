@@ -84,7 +84,6 @@
                             <i class="ki-duotone ki-chart-line-up fs-1 text-white"><span class="path1"></span><span class="path2"></span></i>
                         </span>
                     </span>
-                    <span class="badge badge-light-success fw-bold">+{{ evol_titres|default:"4.2" }}%</span>
                 </div>
                 <div>
                     <div class="fs-2hx fw-bold text-gray-900 lh-1">{{ nb_titres|default:"128" }}</div>
@@ -108,7 +107,6 @@
                             <i class="ki-duotone ki-arrows-loop fs-1 text-white"><span class="path1"></span><span class="path2"></span></i>
                         </span>
                     </span>
-                    <span class="badge badge-light-success fw-bold">+{{ evol_operations|default:"11.8" }}%</span>
                 </div>
                 <div>
                     <div class="fs-2hx fw-bold text-gray-900 lh-1">{{ nb_operations|default:"1 942" }}</div>
@@ -131,7 +129,6 @@
                             <i class="ki-duotone ki-dollar fs-1 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
                         </span>
                     </span>
-                    <span class="badge badge-light-success fw-bold">+{{ evol_volume|default:"6.5" }}%</span>
                 </div>
                 <div>
                     <div class="fs-2hx fw-bold text-gray-900 lh-1">{{ volume_total|default:"3,4 Mds" }}</div>
@@ -154,11 +151,10 @@
                             <i class="ki-duotone ki-people fs-1 text-white"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
                         </span>
                     </span>
-                    <span class="badge badge-light-danger fw-bold">-{{ evol_clients|default:"1.3" }}%</span>
                 </div>
                 <div>
                     <div class="fs-2hx fw-bold text-gray-900 lh-1">{{ nb_clients|default:"864" }}</div>
-                    <div class="fs-7 fw-semibold text-muted mt-1">Subscripteurs</div>
+                    <div class="fs-7 fw-semibold text-muted mt-1">Souscripteurs</div>
                 </div>
             </div>
         </div>
@@ -220,52 +216,48 @@
                                 <th class="min-w-100px">Etablissement</th>
                                 <th class="min-w-125px">Beneficiaire</th>
                                 <th class="min-w-90px text-end">Nombre de titres</th>
+                                <th class="min-w-90px text-end">Date de l'opération</th>
                                 <th class="min-w-100px text-end">Statut</th>
                             </tr>
                         </thead>
                         <tbody class="text-gray-800 fw-semibold">
                             {% for op in operations %}
-                                <tr>
-                                    <td>{{forloop.counter}}</td>
-                                    <td><span class="text-afg-blue fw-bold">{{ op.client.nom_client }} {{ op.client.prenom_client }}</span></td>
-                                    <td class="text-gray-600">{{ op.etablissement.libelle }}</td>
-                                    <td class="text-end">{{op.beneficiaire.nom_client}} {{op.beneficiaire.prenom_client}}</td>
-                                    <td class="text-end fw-bold">{{op.nb_titre}}</td>
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
 
-                                    <td class="text-end">
-                                        {% if op.est_valide == True %}
-                                            <span class="badge badge-light-success">Validée</span>
-                                        {% else %}
-                                            <span class="badge badge-light-warning">Non validée</span>
-                                        {% endif %}
-                                    </td>
+                                <td>
+                                    <span class="text-afg-blue fw-bold">
+                                        {{ op.client.nom_client }} {{ op.client.prenom_client }}
+                                    </span>
+                                </td>
 
-                                </tr>
+                                <td>{{ op.client.banque.libelle }} </td>
+
+                                <td>
+                                    {% if op.beneficiaire %}
+                                        {{ op.beneficiaire.nom_client }} {{ op.beneficiaire.prenom_client }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-end fw-bold">{{ op.nb_titre }}</td>
+                                <td class="text-end fw-bold">{{ op.created }}</td>
+
+                                <td class="text-end">
+                                    {% if op.est_valide %}
+                                        <span class="badge badge-light-success">Validée</span>
+                                    {% else %}
+                                        <span class="badge badge-light-warning">Non validée</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
                             {% empty %}
-                            <tr>
-                                <td><span class="text-afg-blue fw-bold">SONATEL</span></td>
-                                <td><span class="badge badge-light-success">Achat</span></td>
-                                <td class="text-gray-600">M. Diallo</td>
-                                <td class="text-end">1 200</td>
-                                <td class="text-end fw-bold">18 600 000</td>
-                                <td class="text-end"><span class="badge badge-light-success">Validée</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="text-afg-blue fw-bold">BOA CI</span></td>
-                                <td><span class="badge badge-light-danger">Vente</span></td>
-                                <td class="text-gray-600">SCI Atlantique</td>
-                                <td class="text-end">540</td>
-                                <td class="text-end fw-bold">4 320 000</td>
-                                <td class="text-end"><span class="badge badge-light-warning">En attente</span></td>
-                            </tr>
-                            <tr>
-                                <td><span class="text-afg-blue fw-bold">PALMCI</span></td>
-                                <td><span class="badge badge-light-success">Achat</span></td>
-                                <td class="text-gray-600">Mme Kouassi</td>
-                                <td class="text-end">300</td>
-                                <td class="text-end fw-bold">2 145 000</td>
-                                <td class="text-end"><span class="badge badge-light-success">Validée</span></td>
-                            </tr>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">
+                                        Aucune opération trouvée.
+                                    </td>
+                                </tr>
                             {% endfor %}
                         </tbody>
                     </table>

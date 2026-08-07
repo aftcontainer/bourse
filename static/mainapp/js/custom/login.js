@@ -1,4 +1,4 @@
-const pw = document.getElementById("password");
+const pw = document.getElementById("id_password");
   const tog = document.getElementById("pwToggle");
   const icon = tog.querySelector("i");
   tog.addEventListener("click", () => {
@@ -7,6 +7,7 @@ const pw = document.getElementById("password");
     icon.className = show ? "bi bi-eye-slash" : "bi bi-eye";
     tog.setAttribute("aria-label", show ? "Masquer le mot de passe" : "Afficher le mot de passe");
   });
+/*
   document.getElementById("loginForm").addEventListener("submit", (e) => {
     e.preventDefault();
     const btn = e.target.querySelector(".btn-afg");
@@ -14,4 +15,4 @@ const pw = document.getElementById("password");
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Connexion...';
     setTimeout(() => { btn.disabled = false; btn.innerHTML = original; }, 1500);
-  });
+  });*/

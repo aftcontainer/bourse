@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Attestation de titre</title>
+
+    <style>
+        @page {
+            size: A4;
+            margin: 25mm 20mm 25mm 20mm;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            margin-bottom:80px;
+        }
+
+        .logo img{
+            width:130px;
+        }
+
+        .date{
+            text-align:right;
+            font-size:14px;
+        }
+
+        .logo img{
+            width:180px;
+        }
+
+        .date{
+            font-size:18px;
+        }
+
+        h1{
+            text-align:center;
+            font-size:22px;
+            text-decoration:underline;
+            margin:70px 0;
+        }
+
+        p{
+            margin:18px 0;
+            text-align:justify;
+        }
+
+        .center{
+            text-align:center;
+            max-width:100%;
+        }
+
+        .client{
+            font-size:22px;
+            font-weight:bold;
+            margin:25px 0 10px;
+        }
+
+        .compte{
+            font-size:20px;
+        }
+
+        ul{
+            list-style:none;
+            margin-top:40px;
+            margin-left:0;
+            padding-left:0;
+        }
+
+        ul li{
+            margin:12px 0;
+        }
+
+        ul li::before{
+            content:"- ";
+            margin-right:10px;
+        }
+
+        .footer{
+            margin-top:40px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+
+    <div class="logo">
+        <img src="{{ logo_url }}" alt="AFG Bank">
+    </div>
+
+    <div class="date">
+        Libreville, le {{ date }}
+    </div>
+
+</div>
+
+<h1>ATTESTATION DE TITRE</h1>
+
+<p>
+    Nous soussignés AFGbank GABON BP. 2241 Libreville,
+    attestons par la présente que
+</p>
+
+<div class="client center">
+    {{ client.nom_client }} {{ client.prenom_client }}
+</div>
+
+<p class="center compte">
+    est titulaire d'un compte actionnaire
+    N°<strong>{{ client.num_compte }}</strong>
+</p>
+
+<p>
+    A ce jour l'intéressé détient
+    <strong>{{ total_actions }}</strong>
+    ({{ total_actions_lettres }})
+    actions réparties comme suit :
+</p>
+
+<ul>
+
+{% for ind in client.index %}
+
+    <li>
+        {{ ind.quantite }}
+        actions allant du numéro
+        {{ ind.debut_index }}
+        au
+        {{ ind.fin_index }}
+    </li>
+
+{% endfor %}
+
+</ul>
+
+<p class="footer">
+    Cette attestation est délivrée à la demande de
+    l'intéressé(e) pour servir et valoir ce que de droit.
+</p>
+
+</body>
+</html>

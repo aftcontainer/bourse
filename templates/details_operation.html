@@ -1,0 +1,647 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
+{% endblock %}
+
+{% block titre_page %}
+Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
+{% endblock %}
+
+{% block breadcrumb_active %}
+Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
+{% endblock %}
+
+{% block extra_css %}
+
+<link href="{% static 'mainapp/login/assets/css/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+
+<style>
+
+.section-title{
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+    color:#001051;
+    font-weight:700;
+}
+
+.section-title i{
+    color:#001051 !important;
+}
+
+.section-title .num{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    background:#eef3ff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+label{
+    color:#001051;
+    font-weight:600;
+    margin-bottom:8px;
+}
+
+.table th{
+    color:#001051;
+    font-weight:600;
+}
+
+.form-control{
+    border-radius:10px;
+}
+
+.order-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#fff;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:30px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
+
+.order-head h1{
+    color:#001051;
+    font-size:26px;
+    margin-bottom:5px;
+}
+
+.order-head .sub{
+    color:#001051;
+    opacity:.75;
+}
+
+.bank{
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+.logo{
+    width:65px;
+    height:65px;
+    border-radius:15px;
+    background:#eef3ff;
+    color:#001051;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:30px;
+}
+
+.op-pill{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 18px;
+    border-radius:30px;
+    background:#e8fff3;
+    color:#50cd89;
+    font-weight:600;
+}
+
+.op-pill .dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#50cd89;
+}
+
+.card-section{
+    background:#fff;
+    border-radius:15px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+</style>
+
+{% endblock %}
+
+{% block toolbar_actions %}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="order-head">
+
+        <div class="bank">
+
+            <div class="logo">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+
+            <div>
+
+                <h1>
+                    Ordre N°
+                    {{ operation.num_ordre }}
+                </h1>
+
+                <div class="sub">
+
+                    {% if operation.type_operation %}
+                        {{ operation.type_operation.libelle }}
+                    {% else %}
+                        Vente de titres
+                    {% endif %}
+
+                    •
+                    {{ operation.created|date:"d/m/Y H:i" }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <span class="op-pill">
+
+            <span class="dot"></span>
+
+            {% if operation.est_valide %}
+                Ordre validé
+            {% else %}
+                Ordre non validé
+            {% endif %}
+
+        </span>
+
+    </div>
+
+    <!-- ================= INFORMATIONS GENERALES ================= -->
+
+    <div class="card-section p-7 mb-8">
+
+        <div class="section-title mb-6">
+
+            <span class="num">
+
+                <i class="bi bi-info-circle-fill"></i>
+
+            </span>
+
+            <span>
+                Informations générales
+            </span>
+
+        </div>
+
+        <div class="row gy-6">
+
+            <div class="col-md-3">
+
+                <label>Titre</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.titre }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Date</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.created|date:"d/m/Y H:i" }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Numéro d'ordre</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.num_ordre }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Statut</label>
+
+                {% if operation.est_valide %}
+
+                    <div class="form-control form-control-solid text-success fw-bold">
+
+                        <i class="bi bi-check-circle-fill me-2"></i>
+
+                        Validé
+
+                    </div>
+
+                {% else %}
+
+                    <div class="form-control form-control-solid text-warning fw-bold">
+
+                        <i class="bi bi-clock-history me-2"></i>
+
+                        Non validé
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= VENDEUR / BENEFICIAIRE ================= -->
+
+    <div class="row">
+
+        {% if operation.type_operation.libelle == "Achat de titres" or operation.type_operation.libelle == "Vente de titres" or operation.type_operation.libelle == "Transfert de titres" %}
+
+            <div class="col-lg-6">
+
+                <div class="card-section p-7 h-100">
+
+                    <div class="section-title mb-6">
+
+                        <span class="num">
+
+                            <i class="bi bi-person-fill"></i>
+
+                        </span>
+
+                        <span>Vendeur</span>
+
+                    </div>
+                                    <table class="table table-borderless align-middle">
+
+                        <tr>
+                            <th width="35%">Nom</th>
+                            <td>{{ operation.client }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Compte</th>
+                            <td>{{ operation.client.num_compte|default:"-" }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Établissement</th>
+                            <td>{{ operation.client.banque|default:"-" }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Portefeuille</th>
+                            <td>{{ portefeuille_vendeur }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Titres avant</th>
+                            <td>
+                                <span class="badge badge-light-primary">
+                                    {{ operation.nbportef|default:"0" }}
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Titres après</th>
+                            <td>
+                                <span class="badge badge-light-success">
+                                    {{ operation.nbencours|default:"0" }}
+                                </span>
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <!-- ================= BENEFICIAIRE ================= -->
+
+            <div class="col-lg-6">
+
+            <div class="card-section p-7 h-100">
+
+                <div class="section-title mb-6">
+
+                    <span class="num">
+                        <i class="bi bi-person-plus-fill"></i>
+                    </span>
+
+                    <span>Bénéficiaire</span>
+
+                </div>
+
+                <table class="table table-borderless align-middle">
+
+                    <tr>
+                        <th width="35%">Nom</th>
+                        <td>{{ operation.beneficiaire.nom_client|default:"-" }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Compte</th>
+                        <td>{{ operation.beneficiaire.num_compte|default:"-" }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Établissement</th>
+                        <td>{{ operation.beneficiaire.banque|default:"-" }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Portefeuille</th>
+                        <td>{{ portefeuille_beneficiaire }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Titres avant</th>
+                        <td>
+                            <span class="badge badge-light-warning">
+                                {{ operation.nbportefben|default:"0" }}
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Titres après</th>
+                        <td>
+                            <span class="badge badge-light-success">
+                                {{ operation.tot_nbportebef|default:"0" }}
+                            </span>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </div>
+
+        </div>
+        {% else %}
+            <div class="col-lg-12">
+
+                <div class="card-section p-7 h-100">
+
+                    <div class="section-title mb-6">
+
+                        <span class="num">
+
+                            <i class="bi bi-person-fill"></i>
+
+                        </span>
+
+                        <span>Bénéficiaire</span>
+
+                    </div>
+                    <table class="table table-borderless align-middle">
+
+                        <tr>
+                            <th width="35%">Nom</th>
+                            <td>{{ operation.client }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Compte</th>
+                            <td>{{ operation.client.num_compte|default:"-" }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Établissement</th>
+                            <td>{{ operation.client.banque|default:"-" }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Portefeuille</th>
+                            <td>{{ portefeuille_vendeur }}</td>
+                        </tr>
+
+                        <tr>
+                            <th>Titres avant</th>
+                            <td>
+                                <span class="badge badge-light-primary">
+                                    {{ operation.nbportef|default:"0" }}
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Titres après</th>
+                            <td>
+                                <span class="badge badge-light-success">
+                                    {{ operation.nbencours|default:"0" }}
+                                </span>
+                            </td>
+                        </tr>
+
+                    </table>
+
+                </div>
+
+            </div>
+        {% endif %}
+
+    </div>
+
+    <!-- ================= TRANSACTION ================= -->
+
+    <div class="card-section p-7 mt-8 mb-8">
+
+        <div class="section-title mb-6">
+
+            <span class="num">
+                <i class="bi bi-cash-coin"></i>
+            </span>
+
+            <span>
+                Transaction
+            </span>
+
+        </div>
+
+        <div class="row gy-6">
+
+            <div class="col-md-3">
+
+                <label>Nombre de titres</label>
+
+                <div class="form-control form-control-solid fw-bold">
+
+                    {{ operation.nb_titre }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Cours unitaire</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.cours_operation }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Montant brut</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.brut|default:"0" }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-3">
+
+                <label>Montant net</label>
+
+                <div class="form-control form-control-solid fw-bold text-primary">
+
+                    {{ operation.montant|default:"-" }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+        <!-- ================= HISTORIQUE ================= -->
+
+    <div class="card-section p-7 mb-8">
+
+        <div class="section-title mb-6">
+
+            <span class="num">
+                <i class="bi bi-clock-history"></i>
+            </span>
+
+            <span>
+                Historique
+            </span>
+
+        </div>
+
+        <div class="row gy-6">
+
+            <div class="col-md-4">
+
+                <label>Créé par</label>
+
+                <div class="form-control form-control-solid">
+
+                    {% if operation.creer_par %}
+
+                        {{ operation.creer_par.first_name }}
+                        {{ operation.creer_par.last_name }}
+
+                    {% else %}
+
+                        -
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>Date de création</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.created|date:"d/m/Y H:i" }}
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <label>Dernière modification</label>
+
+                <div class="form-control form-control-solid">
+
+                    {{ operation.updated|date:"d/m/Y H:i" }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= BOUTONS ================= -->
+
+    <div class="card-section p-6">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+            <a href="javascript:history.back()"
+               class="btn btn-light-primary">
+
+                <i class="bi bi-arrow-left me-2"></i>
+
+                Retour
+
+            </a>
+
+            <div class="d-flex gap-3">
+
+                {% if not operation.est_valide %}
+
+                <a href="#"
+                   class="btn btn-success">
+
+                    <i class="bi bi-check-circle me-2"></i>
+
+                    Valider
+
+                </a>
+
+                {% endif %}
+                {% if operation.type_operation.libelle == "Achat de titres" or operation.type_operation.libelle == "Vente de titres" or operation.type_operation.libelle == "Transfert de titres" %}
+
+                    <a href="{% url 'mainapp:avis_transaction_achat_vente_pdf' operation.public_id %}">
+                        <button class="btn btn-primary"><i class="bi bi-printer me-2"></i>Imprimer</button>
+                    </a>
+                {% else %}
+                    <a href="#">
+                        <button class="btn btn-primary"><i class="bi bi-printer me-2"></i>Imprimer</button>
+                    </a>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

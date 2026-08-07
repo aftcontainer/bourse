@@ -44,6 +44,7 @@
 	.action-bar{position:sticky;bottom:0;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);
 		border-top:1px solid var(--bs-gray-200);padding:.85rem 0;margin-top:1.5rem;z-index:10}
 </style>
+<link href="{% static 'mainapp/login/assets/css/bootstrap-icons.min.css' %}" rel="stylesheet" />
 {% endblock %}
 
 {% block toolbar_actions %}{% endblock %}
@@ -62,21 +63,52 @@
 		{% endif %}
 
 		{{ form.non_field_errors }}
-		{# Champs techniques masques #}
 		{{ form.num_ordre }}{{ form.num_seq_ordre }}{{ form.code_op }}
 
+		{% if verrouille %}
+			<!-- Champ marqueur : permet de conserver le verrouillage si le formulaire
+			     est ré-affiché après une erreur de validation -->
+			<input type="hidden" name="verrouille" value="1">
+			{% if portefeuille_source %}
+				<input type="hidden" name="portefeuille_source" value="{{ portefeuille_source.pk }}">
+			{% endif %}
+
+			<!-- Valeurs réelles envoyées au serveur : les <select> ci-dessous sont
+			     "disabled" (donc jamais soumis par le navigateur), ces champs
+			     cachés portent donc les valeurs à la place -->
+			<input type="hidden" name="etablissement" value="{{ form.etablissement.value|default_if_none:'' }}">
+			<input type="hidden" name="titre" value="{{ form.titre.value|default_if_none:'' }}">
+			<input type="hidden" name="client" value="{{ form.client.value|default_if_none:'' }}">
+		{% endif %}
+
 		<div class="modal-body py-4 px-lg-4">
+
+			{% if verrouille %}
+				<div class="alert alert-light-primary d-flex align-items-center mb-8">
+					<i class="bi bi-lock-fill fs-3 me-3"></i>
+					<div>
+						Cette opération part du portefeuille sélectionné : le donneur d'ordre,
+						le titre et le vendeur sont pré-remplis et ne peuvent pas être modifiés.
+					</div>
+				</div>
+			{% endif %}
 
 			<!--begin::Section 1 - Informations sur l'ordre-->
 			<div class="card-section p-7 mb-8">
 				<div class="section-title mb-6"><span class="num">1</span> Informations sur l'ordre</div>
 				<div class="row g-6">
 					<div class="col-md-6">
-						<label class="fw-semibold fs-6 mb-2">{{ form.etablissement.label }}</label>
+						<label class="fw-semibold fs-6 mb-2">
+							{{ form.etablissement.label }}
+							{% if verrouille %}<span class="lock"><i class="bi bi-lock-fill"></i></span>{% endif %}
+						</label>
 						{{ form.etablissement }}
 					</div>
 					<div class="col-md-6">
-						<label class="required fw-semibold fs-6 mb-2">{{ form.titre.label }}</label>
+						<label class="required fw-semibold fs-6 mb-2">
+							{{ form.titre.label }}
+							{% if verrouille %}<span class="lock"><i class="bi bi-lock-fill"></i></span>{% endif %}
+						</label>
 						{{ form.titre }}
 					</div>
 					<!-- <div class="col-md-6">
@@ -99,7 +131,10 @@
 					<span class="hint">Compte et identite proviennent de la fiche client</span></div>
 				<div class="row g-6">
 					<div class="col-md-8">
-						<label class="required fw-semibold fs-6 mb-2">{{ form.client.label }}</label>
+						<label class="required fw-semibold fs-6 mb-2">
+							{{ form.client.label }}
+							{% if verrouille %}<span class="lock"><i class="bi bi-lock-fill"></i></span>{% endif %}
+						</label>
 						{{ form.client }}
 					</div>
                     <div class="col-md-4">
@@ -214,6 +249,7 @@
 
 	</form>
 	{{ taux_json|json_script:"taux-data" }}
+	{{ titres_vn_json|json_script:"titres-vn-data" }}
 	<!--end::Form-->
 {% endblock %}
 
@@ -227,5 +263,11 @@
 	window.CLIENTS_URL = "{% url 'mainapp:clients_par_titre' %}";
 	window.BENEF_URL   = "{% url 'mainapp:beneficiaires_par_etablissement' %}";
     window.RATES = JSON.parse(document.getElementById("taux-data").textContent);
+    // Map { "<id_titre>": <valeur_nominale> } utilisee pour calculer l'IRCM
+    window.VALEURS_NOMINALES = JSON.parse(document.getElementById("titres-vn-data").textContent);
+    // Quand on arrive depuis la page détail du portefeuille : le donneur
+    // d'ordre, le titre et le vendeur sont déjà figés côté serveur, on
+    // ne doit pas laisser le JS recharger/écraser le champ vendeur.
+    window.VERROUILLE = {{ verrouille|yesno:"true,false" }};
 </script>
 {% endblock %}

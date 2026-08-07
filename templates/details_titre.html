@@ -1,186 +1,1058 @@
 {% extends "base.html" %}
 {% load static %}
 
-{# Adaptez le chemin extends ci-dessus si votre base se trouve ailleurs, ex. "mainapp/base.html" #}
-
-{% block title %}Détails titre {{obj.libelle}}{% endblock %}
-{% block titre_page %}Détails titre {{obj.libelle}}{% endblock %}
-{% block breadcrumb_active %}Détails titre {{obj.libelle}}{% endblock %}
-
+{% block title %}Détails titre {{ obj.libelle }}{% endblock %}
+{% block titre_page %}Détails titre {{ obj.libelle }}{% endblock %}
+{% block breadcrumb_active %}Détails titre {{ obj.libelle }}{% endblock %}
 
 {% block extra_css %}
+
+<link href="{% static 'mainapp/login/assets/css/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+
 <style>
-    .detail-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
 
-    /* Une ligne = un libellé + une valeur */
-    .detail-row {
-       display: flex; align-items: center;
-       padding: 1rem 0;
-       border-bottom: 1px dashed var(--bs-gray-200);
-    }
-    .detail-row:last-child { border-bottom: 0; }
+:root{
+    --main-color:#001051;
+    --light-color:#eef3ff;
+}
 
-    .detail-label {
-       flex: 0 0 220px; max-width: 220px;
-       color: var(--bs-gray-600); font-weight: 600;
-    }
-    .detail-value {
-       flex: 1 1 auto;
-       color: var(--bs-gray-900); font-weight: 600;
-    }
+.card-section{
+    background:#fff;
+    border:none;
+    border-radius:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
 
-    /* Pastille pour afficher une valeur mise en avant (montant, taux…) */
-    .detail-pill {
-       display: inline-flex; align-items: center; justify-content: center;
-       min-width: 64px; height: 34px; padding: 0 .75rem;
-       border-radius: .65rem; background: var(--bs-light-primary);
-       color: var(--bs-primary); font-weight: 700;
-    }
+.order-head{
 
-    /* Aperçu du logo */
-    .titre-logo {
-       width: 56px; height: 56px; border-radius: .65rem;
-       object-fit: cover; border: 1px solid var(--bs-gray-200);
-    }
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
 
-    @media (max-width: 575.98px) {
-       .detail-row { flex-direction: column; align-items: flex-start; }
-       .detail-label { max-width: 100%; margin-bottom: .25rem; }
-    }
+    background:#fff;
+    border-radius:16px;
+    padding:25px;
+    margin-bottom:30px;
+
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+
+}
+
+.bank{
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+
+}
+
+.logo{
+
+    width:75px;
+    height:75px;
+
+    border-radius:16px;
+
+    background:var(--light-color);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:var(--main-color);
+
+    font-size:34px;
+
+}
+
+.logo img{
+
+    width:100%;
+    height:100%;
+    object-fit:cover;
+
+    border-radius:16px;
+
+}
+
+.order-head h1{
+
+    color:var(--main-color);
+    font-weight:700;
+    margin-bottom:4px;
+
+}
+
+.order-head .sub{
+
+    color:#6c757d;
+
+}
+
+.section-title{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:var(--main-color);
+    font-weight:700;
+
+}
+
+.section-title .num{
+
+    width:42px;
+    height:42px;
+
+    border-radius:12px;
+
+    background:var(--light-color);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+}
+
+.section-title i{
+
+    color:var(--main-color);
+
+}
+
+.detail-label{
+
+    color:var(--main-color);
+    font-weight:600;
+    margin-bottom:6px;
+
+}
+
+.detail-value{
+
+    font-weight:600;
+
+}
+
+.detail-pill{
+
+    display:inline-block;
+
+    padding:8px 16px;
+
+    border-radius:10px;
+
+    background:var(--light-color);
+
+    color:var(--main-color);
+
+    font-weight:700;
+
+}
+
+.stat-card{
+
+    border:none;
+    border-radius:15px;
+
+}
+
+.stat-card .card-body{
+
+    padding:20px;
+
+}
+
+.stat-title{
+
+    font-size:.82rem;
+    font-weight:600;
+
+}
+
+.stat-value{
+
+    font-size:1.45rem;
+    font-weight:700;
+
+}
+
 </style>
+
 {% endblock %}
 
 {% block toolbar_actions %}
-   <a href="{% url 'mainapp:liste_titres' %}" class="btn btn-sm btn-light">
-      <i class="ki-outline ki-arrow-left fs-4"></i> Retour
-   </a>
-   <a href="{% url 'mainapp:editer_titre' obj.public_id %}" class="btn btn-sm btn-primary">
-      <i class="ki-outline ki-pencil fs-4"></i> Modifier
-   </a>
+
+<a href="{% url 'mainapp:liste_titres' %}"
+   class="btn btn-light">
+
+    <i class="bi bi-arrow-left"></i>
+
+    Retour
+
+</a>
+
+<a href="{% url 'mainapp:liste_clients_titre' obj.public_id %}"
+   class="btn btn-light-primary">
+
+    <i class="bi bi-people"></i>
+
+    Liste des souscripteurs
+
+</a>
+
+<a href="{% url 'mainapp:registre_central_pdf' obj.public_id %}"
+   class="btn btn-light-success"
+   target="_blank">
+
+    <i class="bi bi-printer"></i>
+
+    Imprimer le registre central
+
+</a>
+
+<a href="{% url 'mainapp:editer_titre' obj.public_id %}"
+   class="btn btn-primary">
+
+    <i class="bi bi-pencil"></i>
+
+    Modifier
+
+</a>
+
 {% endblock %}
 
 {% block content %}
-    <!--begin::Card-->
-    <div class="card detail-card">
 
-       <!--begin::Card header-->
-       <div class="card-header border-0 pt-7">
-          <h3 class="card-title align-items-center">
-             {% if obj.logo %}
-                <img src="{{ obj.logo.url }}" alt="{{ obj.libelle }}" class="titre-logo me-4">
-             {% endif %}
-             <span class="d-flex flex-column">
-                <span class="card-label fw-bold fs-3 mb-1">
-                   {{ obj.libelle|default:"Titre" }}
-                </span>
-                <span class="text-muted fw-semibold fs-7">
-                   {{ obj.type_titre|default:"—" }} · {{ obj.devise|default:"—" }}
-                </span>
-             </span>
-          </h3>
-       </div>
-       <!--end::Card header-->
+<div class="container-fluid">
 
-       <!--begin::Card body-->
-       <div class="card-body py-8 px-lg-12">
+    <!-- ================= HEADER ================= -->
 
-          <!--begin::Type de titre-->
-          <div class="detail-row">
-             <div class="detail-label">Type de titre</div>
-             <div class="detail-value">{{ obj.type_titre|default:"—" }}</div>
-          </div>
-          <!--end::Type de titre-->
+    <div class="order-head">
 
-          <!--begin::Libellé-->
-          <div class="detail-row">
-             <div class="detail-label">Libellé</div>
-             <div class="detail-value">{{ obj.libelle|default:"—" }}</div>
-          </div>
-          <!--end::Libellé-->
+        <div class="bank">
 
-          <!--begin::Devise-->
-          <div class="detail-row">
-             <div class="detail-label">Devise</div>
-             <div class="detail-value">{{ obj.devise|default:"—" }}</div>
-          </div>
-          <!--end::Devise-->
+            <div class="logo">
 
-          <!--begin::Nominal-->
-          <div class="detail-row">
-             <div class="detail-label">Nominal</div>
-             <div class="detail-value">
-                <span class="detail-pill">{{ obj.nominal|default:"0" }}</span>
-             </div>
-          </div>
-          <!--end::Nominal-->
-
-          <!--begin::Nombre d'actions-->
-          <div class="detail-row">
-             <div class="detail-label">Nombre d'actions</div>
-             <div class="detail-value">{{ obj.nb_actions|default:"—" }}</div>
-          </div>
-          <!--end::Nombre d'actions-->
-
-          <!--begin::Cours de l'action-->
-          <div class="detail-row">
-             <div class="detail-label">Cours de l'action</div>
-             <div class="detail-value">{{ obj.cours|default:"—" }}</div>
-          </div>
-          <!--end::Cours de l'action-->
-
-          <!--begin::Minimum de souscription-->
-          <div class="detail-row">
-             <div class="detail-label">Minimum de souscription</div>
-             <div class="detail-value">{{ obj.nb_mini|default:"—" }}</div>
-          </div>
-          <!--end::Minimum de souscription-->
-
-          <!--begin::Cours de l'obligation-->
-          <div class="detail-row">
-             <div class="detail-label">Cours de l'obligation</div>
-             <div class="detail-value">{{ obj.cours_oblig|default:"—" }}</div>
-          </div>
-          <!--end::Cours de l'obligation-->
-
-          <!--begin::Taux de l'obligation-->
-          <div class="detail-row">
-             <div class="detail-label">Taux de l'obligation (%)</div>
-             <div class="detail-value">
-                <span class="detail-pill">{{ obj.tx_oblig|default:"0" }} %</span>
-             </div>
-          </div>
-          <!--end::Taux de l'obligation-->
-
-          <!--begin::Date dernier coupon-->
-          <div class="detail-row">
-             <div class="detail-label">Date dernier coupon</div>
-             <div class="detail-value">{{ obj.dercoupon|date:"d/m/Y"|default:"—" }}</div>
-          </div>
-          <!--end::Date dernier coupon-->
-
-          <!--begin::Logo-->
-          <div class="detail-row">
-             <div class="detail-label">Logo du titre</div>
-             <div class="detail-value">
                 {% if obj.logo %}
-                   <a href="{{ obj.logo.url }}" target="_blank">{{ obj.logo.name }}</a>
-                {% else %}
-                   —
-                {% endif %}
-             </div>
-          </div>
-          <!--end::Logo-->
 
-       </div>
-       <!--end::Card body-->
+                    <img src="{{ obj.logo.url }}">
+
+                {% else %}
+
+                    <i class="bi bi-graph-up-arrow"></i>
+
+                {% endif %}
+
+            </div>
+
+            <div>
+
+                <h1>
+
+                    {{ obj.libelle }}
+
+                </h1>
+
+                <div class="sub">
+
+                    {{ obj.type_titre }}
+
+                    •
+
+                    {{ obj.devise }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="d-flex gap-3 flex-wrap">
+
+            <span class="badge badge-light-primary fs-6">
+
+                {{ obj.devise }}
+
+            </span>
+
+            <span class="badge badge-light-success fs-6">
+
+                {{ obj.type_titre }}
+
+            </span>
+
+        </div>
 
     </div>
-    <!--end::Card-->
+
+    <!-- ================= TABLEAU DE BORD ================= -->
+
+    <div class="row g-5 mb-8">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-primary">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-primary">
+
+                        Nombre d'actions
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.actions|default:"0" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-success">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-success">
+
+                        Cours actuel
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.cours }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-info">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-info">
+
+                        Valeur nominale
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.nominal }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-warning">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-warning">
+
+                        Souscripteurs
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.nb_clients|default:"0" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= DEBUT DES SECTIONS ================= -->
+
+    <div class="row g-7">
+            <!-- ================= INFORMATIONS GENERALES ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-info-circle"></i>
+
+                        </span>
+
+                        Informations générales
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Code
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.code|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-value">
+
+                                {{ obj.code_isin|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Libellé
+                            </div>
+
+                            <div class="detail-value fs-5">
+
+                                {{ obj.libelle }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Type de titre
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="badge badge-light-primary">
+
+                                    {{ obj.type_titre }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Devise
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="badge badge-light-success">
+
+                                    {{ obj.devise }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Société émettrice
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.societe|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= STATISTIQUES ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-bar-chart-line"></i>
+
+                        </span>
+
+                        Statistiques
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Nombre d'actions
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.actions|default:"0" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Valeur nominale
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.nominal }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Cours actuel
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.cours }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Nombre de souscripteurs
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ nb_souscripteurs|default:"0" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Capital représenté
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ capital_total|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= DEBUT CARACTERISTIQUES FINANCIERES ================= -->
+
+    <div class="row g-7 mt-2">
+            <!-- ================= CARACTERISTIQUES FINANCIERES ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-cash-stack"></i>
+
+                        </span>
+
+                        Caractéristiques financières
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Valeur nominale
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.nominal|default:"-" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Cours actuel
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.cours|default:"-" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Devise
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="badge badge-light-primary">
+
+                                    {{ obj.devise|default:"-" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Nombre d'actions
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.nb_actions|default:"0" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Capital représenté
+                            </div>
+
+                            <div class="detail-value fs-5 fw-bold text-primary">
+
+                                {{ capital_total|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= INFORMATIONS COMPLEMENTAIRES ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-image"></i>
+
+                        </span>
+
+                        Informations complémentaires
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="text-center mb-6">
+
+                        {% if obj.logo %}
+
+                            <img src="{{ obj.logo.url }}"
+                                 class="img-fluid rounded shadow-sm"
+                                 style="max-height:180px;">
+
+                        {% else %}
+
+                            <div class="py-5">
+
+                                <i class="bi bi-image text-muted"
+                                   style="font-size:5rem;"></i>
+
+                                <p class="text-muted mt-3">
+
+                                    Aucun logo disponible
+
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="row gy-5">
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Libellé complet
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.libelle }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Code ISIN
+                            </div>
+
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Type
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.type_titre|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Société émettrice
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.societe|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= HISTORIQUE ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-header border-0">
+
+            <h3 class="card-title section-title">
+
+                <span class="num">
+
+                    <i class="bi bi-clock-history"></i>
+
+                </span>
+
+                Historique
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+                            <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Créé par
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.nom_creat|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Date de création
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.date_creat|date:"d/m/Y"|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Modifié par
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.nom_modif|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Dernière modification
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.date_modif|date:"d/m/Y"|default:"-" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= SUBSCRIPTEURS ================= -->
+
+    <div class="text-center"></div>
+
+    <!-- ================= ACTIONS ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                <a href="{% url 'mainapp:liste_titres' %}"
+                   class="btn btn-light-primary">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+
+                    Retour à la liste
+
+                </a>
+
+                <div class="d-flex gap-3 flex-wrap">
+
+                    <a href="{% url 'mainapp:liste_clients_titre' obj.public_id %}"
+                       class="btn btn-light-primary">
+
+                        <i class="bi bi-people me-2"></i>
+
+                        Liste des souscripteurs
+
+                    </a>
+
+                    <a href="{% url 'mainapp:registre_central_pdf' obj.public_id %}"
+                       class="btn btn-light-success"
+                       target="_blank">
+
+                        <i class="bi bi-printer me-2"></i>
+
+                        Imprimer le registre central
+
+                    </a>
+
+                    <a href="{% url 'mainapp:editer_titre' obj.public_id %}"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-pencil-square me-2"></i>
+
+                        Modifier
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
-   <script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
-   <script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
-   <script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
-   <script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+
+    <script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+    <script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+    <script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+    <script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+
+    <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        document.querySelectorAll(".card-section").forEach(function(card){
+
+            card.addEventListener("mouseenter", function(){
+
+                this.style.transform = "translateY(-3px)";
+                this.style.transition = "all .25s ease";
+
+            });
+
+            card.addEventListener("mouseleave", function(){
+
+                this.style.transform = "translateY(0)";
+
+            });
+
+        });
+
+    });
+
+</script>
+
 {% endblock %}

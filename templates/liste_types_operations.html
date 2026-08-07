@@ -72,6 +72,7 @@
 						<tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
 							<th class="min-w-125px">#</th>
 							<th class="min-w-125px">Code</th>
+							<th class="min-w-125px">Sens</th>
 							<th class="min-w-125px">Libellé</th>
 							<th class="text-end min-w-70px">Actions</th>
 						</tr>
@@ -81,6 +82,7 @@
 							<tr>
 								<td>{{ forloop.counter }}</td>
 								<td>{{t_operation.old_id}}</td>
+								<td>{{t_operation.mvnt_operation}}</td>
 								<td>{{t_operation.libelle}}</td>
 								<td class="text-end">
                                     <a href="{% url 'mainapp:details_t_operation' t_operation.public_id %}" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"

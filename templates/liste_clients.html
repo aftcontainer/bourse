@@ -6,7 +6,7 @@
 {% block breadcrumb_active %}Souscripteurs{% endblock %}
 
 {% block toolbar_actions %}
-<a href="{% url 'mainapp:creer_souscripteur' %}"  class="btn btn-sm fw-bold btn-primary d-flex align-items-center">
+<a href="{% url 'mainapp:creer_souscripteur' %}" class="btn btn-sm fw-bold btn-primary d-flex align-items-center me-2">
 	<svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="me-1" xmlns="http://www.w3.org/2000/svg">
 		<path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
 	</svg>
@@ -28,6 +28,24 @@
 		border-radius: .65rem; background: var(--bs-light-primary);
 		color: var(--bs-primary); font-weight: 700;
 	}
+
+	/* Bouton "Imprimer la liste" : action secondaire, distincte de "Créer souscripteur" */
+	#btn_ouvrir_impression {
+		transition: background-color .15s ease, transform .1s ease;
+	}
+	#btn_ouvrir_impression:hover {
+		transform: translateY(-1px);
+	}
+	#btn_ouvrir_impression .spinner-border {
+		width: .9rem; height: .9rem; border-width: .15em;
+	}
+
+	/* Overlay de chargement du tableau des souscripteurs */
+	#kt_clients_table_overlay {
+		background: rgba(255, 255, 255, .75);
+		z-index: 5;
+		border-radius: .475rem;
+	}
 </style>
 {% endblock %}
 
@@ -44,86 +62,106 @@
 							<span class="path1"></span>
 							<span class="path2"></span>
 						</i>
-						<input type="text" data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px ps-12" placeholder="Recherche..." />
+						<input type="text" id="client_search" data-kt-subscription-table-filter="search" class="form-control form-control-solid w-250px ps-12" placeholder="Recherche..." />
 					</div>
 					<!--end::Search-->
 				</div>
 				<!--begin::Card title-->
 				<!--begin::Card toolbar-->
 				<div class="card-toolbar">
-					<!--begin::Group actions-->
-					<div class="d-flex justify-content-end align-items-center d-none" data-kt-subscription-table-toolbar="selected">
-						<div class="fw-bold me-5">
-						<span class="me-2" data-kt-subscription-table-select="selected_count"></span>Selected</div>
-						<button type="button" class="btn btn-danger" data-kt-subscription-table-select="delete_selected">Delete Selected</button>
-					</div>
-					<!--end::Group actions-->
+
+					<button type="button"
+					        id="btn_ouvrir_impression"
+					        class="btn btn-light-primary btn-sm fw-bold d-flex align-items-center"
+					        data-bs-toggle="modal"
+					        data-bs-target="#kt_modal_choix_titre">
+
+						<i class="ki-duotone ki-printer fs-3 me-1">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+
+						Imprimer la liste
+					</button>
+
 				</div>
 				<!--end::Card toolbar-->
 			</div>
 			<!--end::Card header-->
 			<!--begin::Card body-->
 			<div class="card-body pt-0">
-				<!--begin::Table-->
-				<table class="table align-middle table-row-dashed fs-6 gy-2" id="kt_clients_table">
-					<thead>
-						<tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-							<th class="min-w-125px">#</th>
-							<th class="min-w-125px">Catégorie client</th>
-							<th class="min-w-125px">Nom complet</th>
-							<th class="min-w-125px">Etablissement</th>
-							<th class="min-w-125px">Ville</th>
-							<th class="text-end min-w-70px">Actions</th>
-						</tr>
-					</thead>
-					<tbody class="text-gray-600 fw-semibold">
-						{% for client in clients %}
-							<tr>
-								<td>{{ forloop.counter }}</td>
-								<td>{{ client.category_client.libelle }}</td>
-								<td>{{ client.nom_client }} {{ client.prenom_client }}</td>
-								<td>{{client.banque.libelle}}</td>
-								<td>{{client.ville}}</td>
-								<td class="text-end">
-                                    <a href="{% url 'mainapp:details_souscripteur' client.public_id %}" class="btn btn-icon viewBtn btn-light btn-active-light-primary btn-sm me-1"
-                                       data-bs-toggle="tooltip" title="Voir les détails">
-                                        <i class="ki-duotone ki-eye fs-4">
-                                           <span class="path1"></span>
-                                           <span class="path2"></span>
-                                           <span class="path3"></span>
-                                        </i>
-                                    </a>
-									<!--begin::Edit-->
-									<a href="{% url 'mainapp:editer_souscripteur' client.public_id %}" class="btn btn-icon editBtn btn-light btn-active-light-primary btn-sm me-1"
-									   data-bs-toggle="tooltip" title="Modifier">
-										<i class="ki-duotone ki-pencil fs-4">
-											<span class="path1"></span>
-											<span class="path2"></span>
-										</i>
-									</a>
-									<!--end::Edit-->
+				<!--begin::Table wrapper (position-relative pour l'overlay)-->
+				<div class="position-relative">
 
-									<!--begin::Delete-->
-									<a href="#" class="btn btn-icon btn-light btn-active-light-danger btn-sm deleteBtn"
-									   data-id="{{t_operation.id}}"
-									   data-bs-toggle="tooltip" title="Supprimer">
-										<i class="ki-duotone ki-trash fs-4">
-											<span class="path1"></span><span class="path2"></span><span class="path3"></span>
-											<span class="path4"></span><span class="path5"></span>
-										</i>
-									</a>
-									<!--end::Delete-->
-								</td>
+					<!--begin::Table loading overlay-->
+					<div id="kt_clients_table_overlay"
+					     class="position-absolute top-0 start-0 w-100 h-100 d-none flex-column align-items-center justify-content-center">
+						<div class="spinner-border text-primary" role="status" style="width: 2.5rem; height: 2.5rem;"></div>
+						<span class="text-muted fs-7 fw-semibold mt-3">Chargement des souscripteurs...</span>
+					</div>
+					<!--end::Table loading overlay-->
+
+					<!--begin::Table-->
+					<table class="table align-middle table-row-dashed fs-6 gy-2" id="kt_clients_table">
+						<thead>
+							<tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+								<th class="min-w-125px">#</th>
+								<th class="min-w-125px">Catégorie client</th>
+								<th class="min-w-125px">Nom complet</th>
+								<th class="min-w-125px">Etablissement</th>
+								<th class="min-w-125px">Ville</th>
+								<th class="text-end min-w-70px">Actions</th>
 							</tr>
-						{% endfor %}
-					</tbody>
-				</table>
-				<!--end::Table-->
+						</thead>
+						<tbody class="text-gray-600 fw-semibold">
+
+						</tbody>
+					</table>
+					<!--end::Table-->
+				</div>
 			</div>
 			<!--end::Card body-->
 		</div>
 	<!--end::Card-->
 	<!--end::Card-->
+
+	<!--begin::Modal - Choix du titre avant impression-->
+	<div class="modal fade" id="kt_modal_choix_titre" tabindex="-1" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content rounded-3">
+				<div class="modal-header border-0 pb-0">
+					<h5 class="modal-title fw-bold">Imprimer la liste des actionnaires</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+				</div>
+				<div class="modal-body pt-2">
+					<p class="text-muted mb-4">
+						Sélectionnez la valeur (titre) pour laquelle générer la liste des actionnaires.
+					</p>
+					<label for="select_titre_impression" class="form-label fw-semibold">Titre</label>
+					<select id="select_titre_impression" class="form-select form-select-solid">
+						<option value="" disabled selected>Choisir un titre...</option>
+						{% for titre in titres %}
+						<option value="{{ titre.public_id }}">{{ titre.libelle }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="modal-footer border-0 pt-0">
+					<button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+					<button type="button" id="btn_confirmer_impression" class="btn btn-primary d-flex align-items-center" disabled>
+						<i class="ki-duotone ki-printer fs-4 me-1">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+						<span id="btn_confirmer_impression_label">Générer le PDF</span>
+						<span class="spinner-border ms-2 d-none" id="btn_confirmer_impression_spinner" role="status"></span>
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--end::Modal-->
+
+
 {% endblock %}
 
 {% block extra_js %}
@@ -145,4 +183,60 @@
 
 		<script src="{% static 'mainapp/js/custom/notifications.js' %}"></script>
 		<script src="{% static 'mainapp/js/custom/client.js' %}"></script>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				const select = document.getElementById('select_titre_impression');
+				const btnConfirmer = document.getElementById('btn_confirmer_impression');
+				const btnLabel = document.getElementById('btn_confirmer_impression_label');
+				const btnSpinner = document.getElementById('btn_confirmer_impression_spinner');
+				const modalEl = document.getElementById('kt_modal_choix_titre');
+
+				// Le bouton "Générer le PDF" ne s'active qu'une fois un titre choisi
+				select.addEventListener('change', function () {
+					btnConfirmer.disabled = !select.value;
+				});
+
+				// Filet de sécurité : force la suppression du fond gris (backdrop)
+				// et des classes ajoutées par Bootstrap sur <body>, au cas où la
+				// fermeture normale de la modale échoue (ex: onglet PDF qui prend
+				// le focus, timer retardé par le navigateur, etc.)
+				function forcerNettoyageModale() {
+					document.body.classList.remove('modal-open');
+					document.body.style.removeProperty('padding-right');
+					document.body.style.removeProperty('overflow');
+					document.querySelectorAll('.modal-backdrop').forEach(function (el) {
+						el.remove();
+					});
+				}
+
+				btnConfirmer.addEventListener('click', function () {
+					if (!select.value) return;
+
+					const url = "{% url 'mainapp:clients_pdf' %}?public_id=" + encodeURIComponent(select.value);
+					const nouvelOnglet = window.open(url, '_blank');
+
+					if (!nouvelOnglet) {
+						alert("Le navigateur a bloqué l'ouverture du PDF. Autorisez les pop-ups pour ce site puis réessayez.");
+						return;
+					}
+
+					btnLabel.textContent = 'Génération...';
+					btnSpinner.classList.remove('d-none');
+
+					const instance = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+					instance.hide();
+
+					setTimeout(forcerNettoyageModale, 400);
+				});
+
+				modalEl.addEventListener('hidden.bs.modal', function () {
+					select.selectedIndex = 0;
+					btnConfirmer.disabled = true;
+					btnLabel.textContent = 'Générer le PDF';
+					btnSpinner.classList.add('d-none');
+					forcerNettoyageModale();
+				});
+			});
+		</script>
 {% endblock %}

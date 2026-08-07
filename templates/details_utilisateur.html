@@ -5,253 +5,1036 @@
 {% block titre_page %}Détails de l'utilisateur{% endblock %}
 {% block breadcrumb_active %}{{ utilisateur.first_name }} {{ utilisateur.last_name }}{% endblock %}
 
-
 {% block extra_css %}
+
+<link href="{% static 'mainapp/login/assets/css/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+
 <style>
-	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
-	.section-title {
-		display: flex; align-items: center; gap: .5rem;
-		font-weight: 700; color: var(--bs-gray-800);
-	}
-	.section-title .num {
-		display: inline-flex; align-items: center; justify-content: center;
-		width: 26px; height: 26px; border-radius: .5rem;
-		background: var(--bs-light-primary); color: var(--bs-primary);
-		font-size: .85rem; font-weight: 700;
-	}
-	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
 
-	/* ---- Bannière profil ---- */
-	.profile-banner {
-		display: flex; align-items: center; gap: 1.3rem;
-		flex-wrap: wrap;
-	}
-	.profile-banner .avatar {
-		width: 72px; height: 72px; border-radius: .9rem; flex-shrink: 0;
-		display: flex; align-items: center; justify-content: center;
-		background: var(--bs-primary); color: #fff; font-weight: 700; font-size: 1.4rem;
-	}
-	.profile-banner .name { font-weight: 700; font-size: 1.25rem; color: var(--bs-gray-800); }
-	.profile-banner .email { color: var(--bs-gray-500); }
-	.profile-banner .meta-badges { margin-top: .5rem; display: flex; gap: .4rem; flex-wrap: wrap; }
-	.profile-banner .meta-badges .badge { font-size: .75rem; }
+:root{
 
-	.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; }
-	.info-item .info-label { font-size: .78rem; color: var(--bs-gray-500); font-weight: 600; text-transform: uppercase; letter-spacing: .02em; }
-	.info-item .info-value { font-size: .95rem; color: var(--bs-gray-800); font-weight: 600; margin-top: .15rem; }
+    --main-color:#001051;
+    --light-color:#eef3ff;
 
-	/* ---- Cartes de rôles (lecture seule) ---- */
-	.role-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-		gap: .9rem;
-	}
-	.role-card-view {
-		border: 1px solid var(--bs-gray-200); border-radius: .85rem;
-		padding: 1rem 1.1rem;
-		border-left: 4px solid var(--bs-primary);
-	}
-	.role-card-view .role-name { font-weight: 700; color: var(--bs-gray-800); }
-	.role-card-view .role-desc { font-size: .82rem; color: var(--bs-gray-500); margin-top: .35rem; }
-	.role-card-view .role-perm-count {
-		font-size: .72rem; font-weight: 700;
-		background: var(--bs-gray-200); color: var(--bs-gray-700);
-		border-radius: 2rem; padding: .15rem .55rem; margin-top: .5rem;
-		display: inline-block;
-	}
+}
 
-	/* ---- Permissions effectives (matrice compacte, lecture seule) ---- */
-	.perm-table-wrapper {
-		max-height: 380px;
-		overflow-y: auto;
-		border: 1px solid var(--bs-gray-200);
-		border-radius: .75rem;
-	}
-	table.perm-table-view { margin-bottom: 0; }
-	table.perm-table-view thead th {
-		position: sticky; top: 0; z-index: 2;
-		background: var(--bs-gray-100);
-		font-size: .82rem; font-weight: 700; color: var(--bs-gray-700);
-		text-align: center; vertical-align: middle;
-	}
-	table.perm-table-view thead th:first-child { text-align: left; padding-left: 1.1rem; }
-	table.perm-table-view tbody td { text-align: center; vertical-align: middle; }
-	table.perm-table-view tbody td:first-child { text-align: left; padding-left: 1.1rem; font-weight: 600; color: var(--bs-gray-800); }
-	.perm-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--bs-success); }
-	.perm-dot.off { background: var(--bs-gray-300); }
+.card-section{
 
-	/* ---- Historique récent ---- */
-	.timeline-item { display: flex; gap: .8rem; padding: .6rem 0; border-bottom: 1px solid var(--bs-gray-100); }
-	.timeline-item:last-child { border-bottom: none; }
-	.timeline-item .badge-action { font-size: .72rem; font-weight: 700; padding: .3rem .55rem; border-radius: .4rem; }
-	.badge-CREATE { background: var(--bs-light-success); color: var(--bs-success); }
-	.badge-UPDATE { background: var(--bs-light-primary); color: var(--bs-primary); }
-	.badge-DELETE { background: var(--bs-light-danger);  color: var(--bs-danger); }
-	.badge-LOGIN  { background: var(--bs-light-info);    color: var(--bs-info); }
-	.badge-LOGOUT { background: var(--bs-gray-200);      color: var(--bs-gray-700); }
-	.timeline-date { color: var(--bs-gray-500); font-size: .78rem; }
+    background:#fff;
+    border:none;
+    border-radius:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+
+}
+
+.order-head{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+
+    background:#fff;
+
+    border-radius:16px;
+
+    padding:28px;
+
+    margin-bottom:30px;
+
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+
+}
+
+.bank{
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+
+}
+
+.logo{
+
+    width:78px;
+    height:78px;
+
+    border-radius:18px;
+
+    background:var(--light-color);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:var(--main-color);
+
+    font-size:30px;
+
+    font-weight:700;
+
+}
+
+.order-head h1{
+
+    color:var(--main-color);
+    font-size:1.8rem;
+    font-weight:700;
+    margin-bottom:4px;
+
+}
+
+.order-head .sub{
+
+    color:#6c757d;
+
+}
+
+.section-title{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:var(--main-color);
+
+    font-weight:700;
+
+}
+
+.section-title .num{
+
+    width:42px;
+    height:42px;
+
+    border-radius:12px;
+
+    background:var(--light-color);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+}
+
+.section-title i{
+
+    color:var(--main-color);
+
+}
+
+.detail-label{
+
+    color:var(--main-color);
+
+    font-weight:600;
+
+    margin-bottom:6px;
+
+}
+
+.detail-value{
+
+    font-weight:600;
+
+    color:#212529;
+
+}
+
+.detail-pill{
+
+    display:inline-block;
+
+    padding:8px 18px;
+
+    border-radius:10px;
+
+    background:var(--light-color);
+
+    color:var(--main-color);
+
+    font-weight:700;
+
+}
+
+.stat-card{
+
+    border:none;
+
+    border-radius:15px;
+
+    box-shadow:0 2px 10px rgba(0,0,0,.04);
+
+}
+
+.stat-card .card-body{
+
+    padding:20px;
+
+}
+
+.stat-title{
+
+    font-size:.82rem;
+
+    font-weight:600;
+
+}
+
+.stat-value{
+
+    font-size:1.55rem;
+
+    font-weight:700;
+
+}
+
 </style>
+
 {% endblock %}
 
 {% block toolbar_actions %}
-	<a href="{% url 'mainapp:liste_utilisateurs' %}" class="btn btn-sm btn-light me-2">
-		<i class="ki-duotone ki-arrow-left fs-5 me-1"><span class="path1"></span><span class="path2"></span></i>
-		Retour à la liste
-	</a>
-	<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}" class="btn btn-sm btn-primary">
-		<i class="ki-duotone ki-setting-3 fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-		Gérer les rôles
-	</a>
+
+<a href="{% url 'mainapp:liste_utilisateurs' %}"
+
+   class="btn btn-light">
+
+    <i class="bi bi-arrow-left"></i>
+
+    Retour
+
+</a>
+
+<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}"
+
+   class="btn btn-primary">
+
+    <i class="bi bi-shield-lock"></i>
+
+    Gérer les rôles
+
+</a>
+
+<form method="post"
+      action="{% url 'mainapp:toggle_utilisateur_actif' public_id=utilisateur.public_id %}"
+      class="d-inline"
+      onsubmit="return confirm('{% if utilisateur.is_active %}Désactiver{% else %}Activer{% endif %} le compte de {{ utilisateur.first_name }} {{ utilisateur.last_name }} ?');">
+    {% csrf_token %}
+    {% if utilisateur.is_active %}
+        <button type="submit" class="btn btn-light-danger">
+            <i class="bi bi-slash-circle"></i>
+            Désactiver
+        </button>
+    {% else %}
+        <button type="submit" class="btn btn-light-success">
+            <i class="bi bi-check-circle"></i>
+            Activer
+        </button>
+    {% endif %}
+</form>
+
 {% endblock %}
 
 {% block content %}
 
-	<!--begin::Section 1 — Profil-->
-	<div class="card-section p-7 mb-8">
-		<div class="section-title mb-6"><span class="num">1</span> Profil</div>
+<div class="container-fluid">
 
-		<div class="profile-banner mb-8">
-			<div class="avatar">
-				{{ utilisateur.first_name|slice:":1" }}{{ utilisateur.last_name|slice:":1" }}
-			</div>
-			<div>
-				<div class="name">{{ utilisateur.last_name }} {{ utilisateur.first_name }}</div>
-				<div class="email">{{ utilisateur.email }}</div>
-				<div class="meta-badges">
-					<span class="badge badge-light">@{{ utilisateur.username }}</span>
-					{% if utilisateur.is_active %}
-						<span class="badge badge-light-success">Actif</span>
-					{% else %}
-						<span class="badge badge-light-danger">Inactif</span>
-					{% endif %}
-					{% if utilisateur.is_superuser %}
-						<span class="badge badge-light-warning">Super-utilisateur</span>
-					{% elif utilisateur.is_staff %}
-						<span class="badge badge-light-info">Staff</span>
-					{% endif %}
-				</div>
-			</div>
-		</div>
+    <!-- ================= HEADER ================= -->
 
-		<div class="info-grid">
-			<div class="info-item">
-				<div class="info-label">Identifiant public</div>
-				<div class="info-value">{{ utilisateur.public_id }}</div>
-			</div>
-			<div class="info-item">
-				<div class="info-label">Nombre de rôles</div>
-				<div class="info-value">{{ roles_attribues|length }}</div>
-			</div>
-			<div class="info-item">
-				<div class="info-label">Créé le</div>
-				<div class="info-value">{{ utilisateur.updated|date:"d/m/Y H:i"|default:"—" }}</div>
-			</div>
-			<div class="info-item">
-				<div class="info-label">Dernière mise à jour</div>
-				<div class="info-value">{{ utilisateur.created|date:"d/m/Y H:i"|default:"—" }}</div>
-			</div>
-		</div>
-	</div>
-	<!--end::Section 1-->
+    <div class="order-head">
 
-	<!--begin::Section 2 — Rôles attribués-->
-	<div class="card-section p-7 mb-8">
-		<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
-			<div class="section-title"><span class="num">2</span> Rôles attribués</div>
-			<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}" class="fw-semibold fs-7 text-primary">
-				Modifier les rôles
-			</a>
-		</div>
+        <div class="bank">
 
-		<div class="role-grid">
-			{% for role in roles_attribues %}
-				<div class="role-card-view">
-					<div class="role-name">{{ role.libelle }}</div>
-					{% if role.description %}
-						<div class="role-desc">{{ role.description }}</div>
-					{% endif %}
-					<span class="role-perm-count">{{ role.permissions.count }} permission(s)</span>
-				</div>
-			{% empty %}
-				<div class="text-muted py-6 text-center">
-					Aucun rôle attribué pour le moment.
-					<a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}">Attribuer un rôle</a>.
-				</div>
-			{% endfor %}
-		</div>
-	</div>
-	<!--end::Section 2-->
+            <div class="logo">
 
-	<!--begin::Section 3 — Permissions effectives (cumul de tous les rôles)-->
-	<div class="card-section p-7 mb-8">
-		<div class="section-title mb-6"><span class="num">3</span> Permissions effectives</div>
+                {{ utilisateur.first_name|slice:":1" }}{{ utilisateur.last_name|slice:":1" }}
 
-		<div class="perm-table-wrapper">
-			<table class="table table-row-bordered perm-table-view">
-				<thead>
-					<tr>
-						<th>Module</th>
-						<th style="width:90px;">Voir</th>
-						<th style="width:90px;">Ajouter</th>
-						<th style="width:90px;">Modifier</th>
-						<th style="width:90px;">Supprimer</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for module in permissions_effectives %}
-						<tr>
-							<td>{{ module.label }}</td>
-							<td><span class="perm-dot {% if not module.view %}off{% endif %}"></span></td>
-							<td><span class="perm-dot {% if not module.add %}off{% endif %}"></span></td>
-							<td><span class="perm-dot {% if not module.change %}off{% endif %}"></span></td>
-							<td><span class="perm-dot {% if not module.delete %}off{% endif %}"></span></td>
-						</tr>
-					{% empty %}
-						<tr>
-							<td colspan="5" class="text-center text-muted py-6">
-								Aucune permission effective (aucun rôle attribué).
-							</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		</div>
-		<div class="text-muted fs-8 mt-3">
-			Cumul de toutes les permissions issues des rôles attribués ci-dessus.
-		</div>
-	</div>
-	<!--end::Section 3-->
+            </div>
 
-	<!--begin::Section 4 — Historique récent-->
-	<div class="card-section p-7 mb-2">
-		<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
-			<div class="section-title"><span class="num">4</span> Historique récent</div>
-			<a href="{% url 'mainapp:journal_audit' %}?user={{ utilisateur.id }}" class="fw-semibold fs-7 text-primary">
-				Voir tout le journal
-			</a>
-		</div>
+            <div>
 
-		{% for log in historique_recent %}
-			<div class="timeline-item">
-				<span class="badge-action badge-{{ log.action }}">{{ log.get_action_display }}</span>
-				<div>
-					<div class="fw-semibold">{{ log.object_repr|default:"—" }}</div>
-					<div class="timeline-date">{{ log.created|date:"d/m/Y H:i:s" }}</div>
-				</div>
-			</div>
-		{% empty %}
-			<div class="text-muted py-6 text-center">Aucune activité récente.</div>
-		{% endfor %}
-	</div>
-	<!--end::Section 4-->
+                <h1>
+
+                    {{ utilisateur.last_name }}
+
+                    {{ utilisateur.first_name }}
+
+                </h1>
+
+                <div class="sub">
+
+                    {{ utilisateur.email }}
+
+                </div>
+
+                <div class="mt-2">
+
+                    <span class="badge badge-light">
+
+                        @{{ utilisateur.username }}
+
+                    </span>
+
+                    {% if utilisateur.is_active %}
+
+                        <span class="badge badge-light-success">
+
+                            Actif
+
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge badge-light-danger">
+
+                            Inactif
+
+                        </span>
+
+                    {% endif %}
+
+                    {% if utilisateur.is_superuser %}
+
+                        <span class="badge badge-light-warning">
+
+                            Super-utilisateur
+
+                        </span>
+
+                    {% elif utilisateur.is_staff %}
+
+                        <span class="badge badge-light-info">
+
+                            Staff
+
+                        </span>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= KPI ================= -->
+
+    <div class="row g-5 mb-8">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-primary">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-primary">
+
+                        Rôles
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ roles_attribues|length }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-success">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-success">
+
+                        Permissions
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ permissions_effectives|length }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-info">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-info">
+
+                        Dernière mise à jour
+
+                    </div>
+
+                    <div class="stat-value fs-6">
+
+                        {{ utilisateur.updated|date:"d/m/Y" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-warning">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-warning">
+
+                        Statut
+
+                    </div>
+
+                    <div class="stat-value fs-5">
+
+                        {% if utilisateur.is_active %}
+                            Actif
+                        {% else %}
+                            Inactif
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= DEBUT DES SECTIONS ================= -->
+
+    <div class="row g-7">
+	        <!-- ================= PROFIL UTILISATEUR ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-person-circle"></i>
+
+                        </span>
+
+                        Profil utilisateur
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Nom
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ utilisateur.last_name|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Prénom
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ utilisateur.first_name|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Nom d'utilisateur
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ utilisateur.username }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Email
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ utilisateur.email|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Téléphone
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ utilisateur.telephone|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Statut
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {% if utilisateur.is_active %}
+
+                                    <span class="badge badge-light-success">
+
+                                        Actif
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-light-danger">
+
+                                        Inactif
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Staff
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {% if utilisateur.is_staff %}
+
+                                    <span class="badge badge-light-info">
+
+                                        Oui
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-light">
+
+                                        Non
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+
+                                Super-utilisateur
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {% if utilisateur.is_superuser %}
+
+                                    <span class="badge badge-light-warning">
+
+                                        Oui
+
+                                    </span>
+
+                                {% else %}
+
+                                    <span class="badge badge-light">
+
+                                        Non
+
+                                    </span>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= ROLES ATTRIBUES ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-shield-check"></i>
+
+                        </span>
+
+                        Rôles attribués
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    {% if roles_attribues %}
+
+                        <div class="row g-4">
+
+                            {% for role in roles_attribues %}
+
+                                <div class="col-md-6">
+
+                                    <div class="border rounded-4 p-4 h-100 bg-light">
+
+                                        <div class="d-flex align-items-center mb-3">
+
+                                            <i class="bi bi-person-badge fs-2 text-primary me-3"></i>
+
+                                            <div>
+
+                                                <div class="fw-bold text-dark">
+
+                                                    {{ role.nom }}
+
+                                                </div>
+
+                                                <small class="text-muted">
+
+                                                    Rôle attribué
+
+                                                </small>
+
+                                            </div>
+
+                                        </div>
+
+                                        {% if role.description %}
+
+                                            <div class="text-muted small">
+
+                                                {{ role.description }}
+
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                    {% else %}
+
+                        <div class="text-center py-10">
+
+                            <i class="bi bi-shield-x text-muted fs-1"></i>
+
+                            <div class="mt-4 text-muted">
+
+                                Aucun rôle attribué.
+
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= PERMISSIONS ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-header border-0">
+
+            <h3 class="card-title section-title">
+
+                <span class="num">
+
+                    <i class="bi bi-key"></i>
+
+                </span>
+
+                Permissions effectives
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+		            {% if permissions_effectives %}
+
+                <div class="row g-4">
+
+                    {% for permission in permissions_effectives %}
+
+                        <div class="col-xl-3 col-lg-4 col-md-6">
+
+                            <div class="border rounded-4 p-4 h-100 bg-light">
+
+                                <div class="d-flex align-items-center mb-3">
+
+                                    <div class="symbol symbol-45px me-3">
+
+                                        <span class="symbol-label bg-light-primary">
+
+                                            <i class="bi bi-key-fill text-primary fs-4"></i>
+
+                                        </span>
+
+                                    </div>
+
+                                    <div>
+
+                                        <div class="fw-bold text-dark">
+
+                                            {{ permission.name }}
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="mb-2">
+
+                                    <span class="badge badge-light-primary">
+
+                                        {{ permission.content_type.app_label }}
+
+                                    </span>
+
+                                </div>
+
+                                <div class="small text-muted">
+
+                                    {{ permission.codename }}
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+            {% else %}
+
+                <div class="text-center py-10">
+
+                    <i class="bi bi-key fs-1 text-muted"></i>
+
+                    <h5 class="mt-4 text-muted">
+
+                        Aucune permission disponible
+
+                    </h5>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <!-- ================= HISTORIQUE ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-header border-0">
+
+            <h3 class="card-title section-title">
+
+                <span class="num">
+
+                    <i class="bi bi-clock-history"></i>
+
+                </span>
+
+                Historique
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row gy-6">
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+
+                        Date de création
+
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ utilisateur.created|date:"d/m/Y H:i" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+
+                        Dernière connexion
+
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ utilisateur.last_login|date:"d/m/Y H:i"|default:"Jamais" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+
+                        Dernière modification
+
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ utilisateur.updated|date:"d/m/Y H:i"|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+
+                        État du compte
+
+                    </div>
+
+                    <div class="detail-value">
+
+                        {% if utilisateur.is_active %}
+
+                            <span class="badge badge-light-success">
+
+                                Compte actif
+
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge badge-light-danger">
+
+                                Compte désactivé
+
+                            </span>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= ACTIONS ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap">
+
+                <a href="{% url 'mainapp:liste_utilisateurs' %}"
+
+                   class="btn btn-light-primary">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+
+                    Retour à la liste
+
+                </a>
+
+                <div class="d-flex gap-3">
+
+                    <a href="{% url 'mainapp:attribuer_user_role' public_id=utilisateur.public_id %}"
+
+                       class="btn btn-primary">
+
+                        <i class="bi bi-shield-lock me-2"></i>
+
+                        Gérer les rôles
+
+                    </a>
+
+                    <form method="post"
+                          action="{% url 'mainapp:toggle_utilisateur_actif' public_id=utilisateur.public_id %}"
+                          class="d-inline"
+                          onsubmit="return confirm('{% if utilisateur.is_active %}Désactiver{% else %}Activer{% endif %} le compte de {{ utilisateur.first_name }} {{ utilisateur.last_name }} ?');">
+                        {% csrf_token %}
+                        {% if utilisateur.is_active %}
+                            <button type="submit" class="btn btn-light-danger">
+                                <i class="bi bi-slash-circle me-2"></i>
+                                Désactiver le compte
+                            </button>
+                        {% else %}
+                            <button type="submit" class="btn btn-light-success">
+                                <i class="bi bi-check-circle me-2"></i>
+                                Activer le compte
+                            </button>
+                        {% endif %}
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
 
 {% endblock %}
-
 {% block extra_js %}
+
 <script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
 <script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
 <script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
 <script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
-<script src="{% static 'mainapp/js/custom/details_utilisateur.js' %}"></script>
-{% endblock %}
 
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    document.querySelectorAll(".card-section").forEach(function(card){
+
+        card.addEventListener("mouseenter", function(){
+
+            this.style.transform = "translateY(-3px)";
+            this.style.transition = "all .25s ease";
+
+        });
+
+        card.addEventListener("mouseleave", function(){
+
+            this.style.transform = "translateY(0)";
+
+        });
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

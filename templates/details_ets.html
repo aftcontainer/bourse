@@ -1,240 +1,892 @@
 {% extends "base.html" %}
 {% load static %}
 
-{# Adaptez le chemin extends ci-dessus si votre base se trouve ailleurs, ex. "mainapp/base.html" #}
-
-{% block title %}Détails établissement {{obj.libelle}}{% endblock %}
-{% block titre_page %}Détails établissement {{obj.libelle}}{% endblock %}
-{% block breadcrumb_active %}Détails établissement {{obj.libelle}}{% endblock %}
-
+{% block title %}Détails établissement {{ obj.libelle }}{% endblock %}
+{% block titre_page %}Détails établissement {{ obj.libelle }}{% endblock %}
+{% block breadcrumb_active %}Détails établissement {{ obj.libelle }}{% endblock %}
 
 {% block extra_css %}
+
+<link href="{% static 'mainapp/login/assets/css/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+
 <style>
-    .detail-card { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
 
-    /* Une ligne = un libellé + une valeur */
-    .detail-row {
-       display: flex; align-items: center;
-       padding: 1rem 0;
-       border-bottom: 1px dashed var(--bs-gray-200);
-    }
-    .detail-row:last-child { border-bottom: 0; }
+:root{
+    --main-color:#001051;
+    --light-color:#eef3ff;
+}
 
-    .detail-label {
-       flex: 0 0 260px; max-width: 260px;
-       color: var(--bs-gray-600); font-weight: 600;
-    }
-    .detail-value {
-       flex: 1 1 auto;
-       color: var(--bs-gray-900); font-weight: 600;
-    }
-    .detail-label .label-hint { color: var(--bs-gray-500); font-weight: 500; }
+.card-section{
+    border:none;
+    border-radius:15px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+    background:#fff;
+}
 
-    /* Pastille pour une valeur mise en avant (montant, taux…) */
-    .detail-pill {
-       display: inline-flex; align-items: center; justify-content: center;
-       min-width: 64px; height: 34px; padding: 0 .75rem;
-       border-radius: .65rem; background: var(--bs-light-primary);
-       color: var(--bs-primary); font-weight: 700;
-    }
+.order-head{
 
-    /* Sous-titre de section */
-    .detail-section-title {
-       margin: 1.75rem 0 .25rem;
-       color: var(--bs-gray-800); font-weight: 700; font-size: .95rem;
-       text-transform: uppercase; letter-spacing: .04em;
-    }
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
 
-    /* Dans les colonnes côte à côte : libellé au-dessus de la valeur
-       (les libellés de tranches sont trop longs pour tenir sur une ligne étroite) */
-    .detail-2col .detail-row {
-       flex-direction: column; align-items: flex-start;
-    }
-    .detail-2col .detail-label {
-       flex: 0 0 auto; max-width: 100%; margin-bottom: .25rem;
-    }
+    background:#fff;
+    border-radius:16px;
+    padding:25px;
+    margin-bottom:30px;
 
-    /* Aperçu du logo */
-    .etab-logo {
-       width: 56px; height: 56px; border-radius: .65rem;
-       object-fit: cover; border: 1px solid var(--bs-gray-200);
-    }
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
 
-    @media (max-width: 575.98px) {
-       .detail-row { flex-direction: column; align-items: flex-start; }
-       .detail-label { max-width: 100%; margin-bottom: .25rem; }
-    }
+}
+
+.bank{
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+
+}
+
+.logo{
+
+    width:70px;
+    height:70px;
+    border-radius:16px;
+
+    background:var(--light-color);
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    color:var(--main-color);
+    font-size:34px;
+
+}
+
+.etab-logo{
+
+    width:70px;
+    height:70px;
+    border-radius:16px;
+    object-fit:cover;
+
+    border:1px solid #DDD;
+
+}
+
+.order-head h1{
+
+    color:var(--main-color);
+    margin-bottom:4px;
+    font-weight:700;
+
+}
+
+.order-head .sub{
+
+    color:#6c757d;
+    font-weight:500;
+
+}
+
+.section-title{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:var(--main-color);
+    font-weight:700;
+
+}
+
+.section-title .num{
+
+    width:42px;
+    height:42px;
+
+    border-radius:12px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:var(--light-color);
+
+}
+
+.section-title i{
+
+    color:var(--main-color);
+
+}
+
+.detail-label{
+
+    color:var(--main-color);
+    font-weight:600;
+    margin-bottom:6px;
+
+}
+
+.detail-value{
+
+    font-weight:600;
+
+}
+
+.stat-card{
+
+    border:none;
+    border-radius:15px;
+
+}
+
+.stat-card .card-body{
+
+    padding:20px;
+
+}
+
+.stat-title{
+
+    font-size:.80rem;
+    font-weight:600;
+
+}
+
+.stat-value{
+
+    font-size:1.40rem;
+    font-weight:700;
+
+}
+
+.detail-pill{
+
+    display:inline-block;
+
+    padding:8px 15px;
+
+    border-radius:10px;
+
+    background:var(--light-color);
+
+    color:var(--main-color);
+
+    font-weight:700;
+
+}
+
+.table th{
+
+    color:var(--main-color);
+    font-weight:600;
+
+}
+
 </style>
+
 {% endblock %}
 
 {% block toolbar_actions %}
-   <a href="{% url 'mainapp:liste_ets' %}" class="btn btn-sm btn-light">
-      <i class="ki-outline ki-arrow-left fs-4"></i> Retour
-   </a>
-   <a href="{% url 'mainapp:editer_ets' obj.public_id %}" class="btn btn-sm btn-primary">
-      <i class="ki-outline ki-pencil fs-4"></i> Modifier
-   </a>
+
+<a href="{% url 'mainapp:liste_ets' %}" class="btn btn-light">
+
+    <i class="bi bi-arrow-left"></i>
+
+    Retour
+
+</a>
+
+<a href="{% url 'mainapp:liste_clients_ets' obj.public_id %}" class="btn btn-success">
+
+    <i class="bi bi-people"></i>
+
+    Liste des souscripteurs
+
+</a>
+
+<a href="{% url 'mainapp:editer_ets' obj.public_id %}" class="btn btn-primary">
+
+    <i class="bi bi-pencil"></i>
+
+    Modifier
+
+</a>
+
 {% endblock %}
 
 {% block content %}
-    <!--begin::Card-->
-    <div class="card detail-card">
 
-       <!--begin::Card header-->
-       <div class="card-header border-0 pt-7">
-          <h3 class="card-title align-items-center">
-             {% if obj.logo %}
-                <img src="{{ obj.logo.url }}" alt="{{ obj.libelle }}" class="etab-logo me-4">
-             {% endif %}
-             <span class="d-flex flex-column">
-                <span class="card-label fw-bold fs-3 mb-1">
-                   {{ obj.libelle|default:"Établissement" }}
-                </span>
-                <span class="text-muted fw-semibold fs-7">
-                   Code : {{ obj.code|default:"—" }}{% if obj.sigle %} · {{ obj.sigle }}{% endif %}
-                </span>
-             </span>
-          </h3>
-       </div>
-       <!--end::Card header-->
+<div class="container-fluid">
 
-       <!--begin::Card body-->
-       <div class="card-body py-8 px-lg-12">
+    <!-- HEADER -->
 
-          <!--begin::Section Identification-->
-          <div class="detail-section-title">Identification</div>
+    <div class="order-head">
 
-          <div class="detail-row">
-             <div class="detail-label">Code</div>
-             <div class="detail-value">{{ obj.code|default:"—" }}</div>
-          </div>
+        <div class="bank">
 
-          <div class="detail-row">
-             <div class="detail-label">Sigle</div>
-             <div class="detail-value">{{ obj.sigle|default:"—" }}</div>
-          </div>
+            {% if obj.logo %}
 
-          <div class="detail-row">
-             <div class="detail-label">Libellé</div>
-             <div class="detail-value">{{ obj.libelle|default:"—" }}</div>
-          </div>
-          <!--end::Section Identification-->
+                <img
+                    src="{{ obj.logo.url }}"
+                    class="etab-logo"
+                    alt="{{ obj.libelle }}">
 
-          <!--begin::Section Coordonnées-->
-          <div class="detail-section-title">Coordonnées</div>
+            {% else %}
 
-          <div class="detail-row">
-             <div class="detail-label">Adresse</div>
-             <div class="detail-value">{{ obj.adresse|default:"—" }}</div>
-          </div>
+                <div class="logo">
 
-          <div class="detail-row">
-             <div class="detail-label">Résidence</div>
-             <div class="detail-value">{{ obj.ville.nom_ville|default:"—" }}</div>
-          </div>
+                    <i class="bi bi-building"></i>
 
-          <div class="detail-row">
-             <div class="detail-label">Boîte postale</div>
-             <div class="detail-value">{{ obj.bp_postale|default:"—" }}</div>
-          </div>
-
-          <div class="detail-row">
-             <div class="detail-label">Logo</div>
-             <div class="detail-value">
-                {% if obj.logo %}
-                   <a href="{{ obj.logo.url }}" target="_blank">{{ obj.logo.name }}</a>
-                {% else %}
-                   —
-                {% endif %}
-             </div>
-          </div>
-          <!--end::Section Coordonnées-->
-
-          <!--begin::Sections côte à côte-->
-          <div class="row detail-2col">
-
-             <!--begin::Colonne Commissions-->
-             <div class="col-lg-6">
-                <div class="detail-section-title">Commissions &amp; rétrocession</div>
-
-                <div class="detail-row">
-                   <div class="detail-label">Type de commission</div>
-                   <div class="detail-value">{{ obj.type_com|default:"—" }}</div>
                 </div>
 
-                <div class="detail-row">
-                   <div class="detail-label">Commission minimum</div>
-                   <div class="detail-value">
-                      <span class="detail-pill">{{ obj.min_commission|default:"0" }}</span>
-                   </div>
+            {% endif %}
+
+            <div>
+
+                <h1>
+
+                    {{ obj.libelle }}
+
+                </h1>
+
+                <div class="sub">
+
+                    Code : <strong>{{ obj.code }}</strong>
+
+                    {% if obj.sigle %}
+
+                        • {{ obj.sigle }}
+
+                    {% endif %}
+
                 </div>
 
-                <div class="detail-row">
-                   <div class="detail-label">Taux rétrocession (%)</div>
-                   <div class="detail-value">
-                      <span class="detail-pill">{{ obj.taux_retrocession|default:"0" }} %</span>
-                   </div>
-                </div>
+            </div>
 
-                <div class="detail-row">
-                   <div class="detail-label">Montant mini rétrocession</div>
-                   <div class="detail-value">
-                      <span class="detail-pill">{{ obj.min_retro|default:"0" }}</span>
-                   </div>
-                </div>
-             </div>
-             <!--end::Colonne Commissions-->
+        </div>
 
-             <!--begin::Colonne Tranches-->
-             <div class="col-lg-6">
-                <div class="detail-section-title">Tranches de commission</div>
+        <div class="d-flex gap-3 flex-wrap">
 
-                <div class="detail-row">
-                   <div class="detail-label">Plafond commission 1 <span class="label-hint">(Tranche 1)</span></div>
-                   <div class="detail-value">{{ obj.plafond_commission|default:"—" }}</div>
-                </div>
+            <span class="badge badge-light-primary fs-6">
 
-                <div class="detail-row">
-                   <div class="detail-label">Taux de commission <span class="label-hint">(&lt; Tranche 1)</span></div>
-                   <div class="detail-value">
-                      <span class="detail-pill">{{ obj.tx_commission|default:"0" }} %</span>
-                   </div>
-                </div>
+                {{ obj.ville.nom_ville|default:"Ville non renseignée" }}
 
-                <div class="detail-row">
-                   <div class="detail-label">Plafond commission 2 <span class="label-hint">(Tranche 2)</span></div>
-                   <div class="detail-value">{{ obj.plafond_commission2|default:"—" }}</div>
-                </div>
+            </span>
 
-                <div class="detail-row">
-                   <div class="detail-label">Taux de commission <span class="label-hint">(&gt; Tranche 1 et &lt; Tranche 2)</span></div>
-                   <div class="detail-value">
-                      <span class="detail-pill">{{ obj.tx_commission2|default:"0" }} %</span>
-                   </div>
-                </div>
+            <span class="badge badge-light-success fs-6">
 
-                <div class="detail-row">
-                   <div class="detail-label">Taux de commission <span class="label-hint">(&gt; Tranche 2)</span></div>
-                   <div class="detail-value">
-                      <span class="detail-pill">{{ obj.tx_commission3|default:"0" }} %</span>
-                   </div>
-                </div>
-             </div>
-             <!--end::Colonne Tranches-->
+                {{ obj.type_com|default:"Commission" }}
 
-          </div>
-          <!--end::Sections côte à côte-->
+            </span>
 
-       </div>
-       <!--end::Card body-->
+        </div>
 
     </div>
-    <!--end::Card-->
+
+    <!-- CARTES DE SYNTHESE -->
+
+    <div class="row g-5 mb-8">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-primary">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-primary">
+
+                        Code
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.code|default:"-" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-success">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-success">
+
+                        Ville
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.ville.nom_ville|default:"-" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-info">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-info">
+
+                        Type de commission
+
+                    </div>
+
+                    <div class="stat-value fs-5">
+
+                        {{ obj.type_com|default:"-" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-warning">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-warning">
+
+                        Taux de rétrocession
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.taux_retrocession|default:"0" }} %
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Début des sections -->
+
+    <div class="row g-7">
+            <!-- ================= Identification ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+                            <i class="bi bi-building"></i>
+                        </span>
+
+                        Identification
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Code
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.code|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Sigle
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.sigle|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Libellé
+                            </div>
+
+                            <div class="detail-value fs-5">
+
+                                {{ obj.libelle|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Type de commission
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="badge badge-light-info">
+
+                                    {{ obj.type_com|default:"—" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Taux de rétrocession
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.taux_retrocession|default:"0" }} %
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= Coordonnées ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-geo-alt"></i>
+
+                        </span>
+
+                        Coordonnées
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Adresse
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.adresse|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Ville
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.ville.nom_ville|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Boîte postale
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.bp_postale|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Logo
+                            </div>
+
+                            <div class="detail-value">
+
+                                {% if obj.logo %}
+
+                                    <a href="{{ obj.logo.url }}" target="_blank">
+
+                                        <img src="{{ obj.logo.url }}"
+                                             class="etab-logo me-3">
+
+                                        Voir le logo
+
+                                    </a>
+
+                                {% else %}
+
+                                    —
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= Début Commissions ================= -->
+
+    <div class="row g-7 mt-2">
+            <!-- ================= COMMISSIONS ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+                            <i class="bi bi-cash-coin"></i>
+                        </span>
+
+                        Commissions &amp; rétrocession
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Type de commission
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="badge badge-light-primary">
+
+                                    {{ obj.type_com|default:"—" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Commission minimum
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.min_commission|default:"0" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Taux de rétrocession
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.taux_retrocession|default:"0" }} %
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Minimum rétrocession
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.min_retro|default:"0" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= TRANCHES ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+                            <i class="bi bi-bar-chart-line"></i>
+                        </span>
+
+                        Tranches de commission
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Plafond tranche 1
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.plafond_commission|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Taux tranche 1
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.tx_commission|default:"0" }} %
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Plafond tranche 2
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.plafond_commission2|default:"—" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Taux tranche 2
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.tx_commission2|default:"0" }} %
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Taux au-delà de la tranche 2
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.tx_commission3|default:"0" }} %
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= BARRE D'ACTIONS ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <a href="{% url 'mainapp:liste_ets' %}"
+                   class="btn btn-light-primary">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+
+                    Retour à la liste
+
+                </a>
+
+                <div class="d-flex gap-3">
+
+                    <a href="{% url 'mainapp:liste_clients_ets' obj.public_id %}"
+                       class="btn btn-success">
+
+                        <i class="bi bi-people me-2"></i>
+
+                        Liste des souscripteurs
+
+                    </a>
+
+                    <a href="{% url 'mainapp:editer_ets' obj.public_id %}"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-pencil-square me-2"></i>
+
+                        Modifier
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
-   <script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
-   <script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
-   <script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
-   <script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+
 {% endblock %}

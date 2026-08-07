@@ -1,4 +1,4 @@
-from mainapp.forms import DeviseForm, QualiteForm, CategorieClientForm, TypeOperationForm, TypeTitreForm, ResetEmailForm
+from mainapp.forms import DeviseForm, QualiteForm,SetPasswordForm, CategorieClientForm, TypeOperationForm, TypeTitreForm, ResetEmailForm
 
 
 def devise_form(request):
@@ -18,3 +18,7 @@ def t_titre_form(request):
 
 def reset_email_form(request):
     return {"reset_email_form": ResetEmailForm()}
+
+def confirm_password_form(request):
+    form = SetPasswordForm(request.user, data=request.POST)
+    return {"confirm_password_form": form}

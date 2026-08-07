@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+{% load dict_extras %}
+
+{% block title %}Nouveau rôle{% endblock %}
+{% block titre_page %}Nouveau rôle{% endblock %}
+{% block breadcrumb_active %}Nouveau rôle{% endblock %}
+
+
+{% block extra_css %}
+<style>
+	.card-section { border: 1px solid var(--bs-gray-200); border-radius: 1rem; }
+	.section-title {
+		display: flex; align-items: center; gap: .5rem;
+		font-weight: 700; color: var(--bs-gray-800);
+	}
+	.section-title .num {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 26px; height: 26px; border-radius: .5rem;
+		background: var(--bs-light-primary); color: var(--bs-primary);
+		font-size: .85rem; font-weight: 700;
+	}
+	.label-hint { color: var(--bs-gray-500); font-weight: 500; }
+
+	/* ---- Table des permissions ---- */
+	.perm-search { max-width: 320px; }
+	.perm-table-wrapper {
+		max-height: 520px;
+		overflow-y: auto;
+		border: 1px solid var(--bs-gray-200);
+		border-radius: .75rem;
+	}
+	table.perm-table { margin-bottom: 0; }
+	table.perm-table thead th {
+		position: sticky; top: 0; z-index: 2;
+		background: var(--bs-gray-100);
+		font-size: .85rem; font-weight: 700; color: var(--bs-gray-700);
+		text-align: center; vertical-align: middle;
+		border-bottom: 1px solid var(--bs-gray-200);
+	}
+	table.perm-table thead th:first-child { text-align: left; padding-left: 1.25rem; }
+	table.perm-table tbody td { vertical-align: middle; text-align: center; }
+	table.perm-table tbody td:first-child { text-align: left; padding-left: 1.25rem; font-weight: 600; color: var(--bs-gray-800); }
+	table.perm-table tbody tr:hover { background: var(--bs-light-primary); }
+	table.perm-table tbody tr.d-none { display: none !important; }
+
+	.form-check-input.perm-checkbox { cursor: pointer; }
+	.model-row-toggle { cursor: pointer; }
+
+	.perm-badge-count {
+		font-size: .75rem;
+		font-weight: 700;
+		background: var(--bs-light-primary);
+		color: var(--bs-primary);
+		border-radius: 2rem;
+		padding: .25rem .65rem;
+	}
+</style>
+{% endblock %}
+{% block toolbar_actions %}{% endblock %}
+
+{% block content %}
+	<!--begin::Form-->
+	<form method="post" action="">
+		{% csrf_token %}
+
+		{% if messages %}
+			<ul class="messages mb-6">
+				{% for message in messages %}
+					<li {% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+				{% endfor %}
+			</ul>
+		{% endif %}
+
+		<div class="modal-body py-8 px-lg-10">
+
+			<!--begin::Section 1 — Informations du rôle-->
+			<div class="card-section p-7 mb-8">
+				<div class="section-title mb-6"><span class="num">1</span> Informations du rôle</div>
+
+				<div class="row mb-2">
+					<div class="col-md-6">
+						<label class="required fw-semibold fs-6 mb-2">Libellé du rôle</label>
+						{{ form.libelle }}
+						{% if form.libelle.errors %}
+							<div class="text-danger fs-8 mt-1">{{ form.libelle.errors|striptags }}</div>
+						{% endif %}
+					</div>
+				</div>
+			</div>
+			<!--end::Section 1-->
+
+			<!--begin::Section 2 — Permissions-->
+			<div class="card-section p-7 mb-2">
+				<div class="d-flex flex-wrap justify-content-between align-items-center mb-6">
+					<div class="section-title"><span class="num">2</span> Permissions</div>
+					<span class="perm-badge-count" id="permSelectedCount">0 permission(s) sélectionnée(s)</span>
+				</div>
+
+				<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+					<input type="text" id="permSearch" class="form-control perm-search"
+						   placeholder="Rechercher un module (client, titre, établissement...)">
+
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" id="toggleAllPerms">
+						<label class="form-check-label fw-semibold" for="toggleAllPerms">
+							Tout sélectionner
+						</label>
+					</div>
+				</div>
+
+				<div class="perm-table-wrapper">
+					<table class="table table-row-bordered perm-table">
+						<thead>
+							<tr>
+								<th>Module</th>
+								<th style="width:100px;">Voir</th>
+								<th style="width:100px;">Ajouter</th>
+								<th style="width:100px;">Modifier</th>
+								<th style="width:100px;">Supprimer</th>
+								<th style="width:70px;">Tout</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for module in permissions_by_model %}
+								<tr class="perm-row" data-model-label="{{ module.label|lower }}">
+									<td>{{ module.label }}</td>
+
+									{% with perm=module.perms|get_item:"view" %}
+										<td>
+											{% if perm %}
+												<input type="checkbox" class="form-check-input perm-checkbox"
+													   name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+													   data-row="{{ forloop.counter0 }}"
+													   {% if perm.id in selected_permission_ids %}checked{% endif %}>
+											{% else %}
+												<span class="text-muted">—</span>
+											{% endif %}
+										</td>
+									{% endwith %}
+
+									{% with perm=module.perms|get_item:"add" %}
+										<td>
+											{% if perm %}
+												<input type="checkbox" class="form-check-input perm-checkbox"
+													   name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+													   data-row="{{ forloop.counter0 }}"
+													   {% if perm.id in selected_permission_ids %}checked{% endif %}>
+											{% else %}
+												<span class="text-muted">—</span>
+											{% endif %}
+										</td>
+									{% endwith %}
+
+									{% with perm=module.perms|get_item:"change" %}
+										<td>
+											{% if perm %}
+												<input type="checkbox" class="form-check-input perm-checkbox"
+													   name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+													   data-row="{{ forloop.counter0 }}"
+													   {% if perm.id in selected_permission_ids %}checked{% endif %}>
+											{% else %}
+												<span class="text-muted">—</span>
+											{% endif %}
+										</td>
+									{% endwith %}
+
+									{% with perm=module.perms|get_item:"delete" %}
+										<td>
+											{% if perm %}
+												<input type="checkbox" class="form-check-input perm-checkbox"
+													   name="permissions" value="{{ perm.id }}" id="perm_{{ perm.id }}"
+													   data-row="{{ forloop.counter0 }}"
+													   {% if perm.id in selected_permission_ids %}checked{% endif %}>
+											{% else %}
+												<span class="text-muted">—</span>
+											{% endif %}
+										</td>
+									{% endwith %}
+
+									<td>
+										<input type="checkbox" class="form-check-input model-row-toggle"
+											   data-row="{{ forloop.counter0 }}"
+											   title="Sélectionner toutes les permissions de ce module">
+									</td>
+								</tr>
+							{% empty %}
+								<tr>
+									<td colspan="6" class="text-center text-muted py-6">
+										Aucun module de permission disponible.
+									</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				<div class="text-muted fs-8 mt-3">
+					« — » signifie que cette action n'existe pas pour ce module.
+				</div>
+			</div>
+			<!--end::Section 2-->
+
+		</div>
+
+		<!--begin::Footer-->
+		<div class="flex-center mt-8">
+			<button type="submit" class="btn btn-primary">
+				<span class="indicator-label">Enregistrer</span>
+			</button>
+		</div>
+		<!--end::Footer-->
+
+	</form>
+	<!--end::Form-->
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+<script src="{% static 'mainapp/js/custom/creer_role.js' %}"></script>
+{% endblock %}

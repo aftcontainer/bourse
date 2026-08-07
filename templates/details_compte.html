@@ -1,0 +1,1131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Détail portefeuille{% endblock %}
+{% block titre_page %}Détail du portefeuille{% endblock %}
+{% block breadcrumb_active %}Détail portefeuille{% endblock %}
+
+{% block extra_css %}
+
+<link href="{% static 'mainapp/login/assets/css/bootstrap-icons.min.css' %}" rel="stylesheet"/>
+
+<style>
+
+:root{
+    --main-color:#001051;
+    --light-color:#eef3ff;
+}
+
+.card-section{
+    background:#fff;
+    border:none;
+    border-radius:16px;
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+}
+
+.order-head{
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:20px;
+
+    background:#fff;
+    border-radius:16px;
+    padding:25px;
+    margin-bottom:30px;
+
+    box-shadow:0 2px 12px rgba(0,0,0,.05);
+
+}
+
+.bank{
+
+    display:flex;
+    align-items:center;
+    gap:20px;
+
+}
+
+.logo{
+
+    width:70px;
+    height:70px;
+    border-radius:16px;
+
+    background:var(--light-color);
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    color:var(--main-color);
+
+    font-size:32px;
+
+}
+
+.order-head h1{
+
+    color:var(--main-color);
+    margin-bottom:5px;
+    font-weight:700;
+
+}
+
+.order-head .sub{
+
+    color:#6c757d;
+
+}
+
+.section-title{
+
+    display:flex;
+    align-items:center;
+    gap:12px;
+
+    color:var(--main-color);
+    font-weight:700;
+
+}
+
+.section-title .num{
+
+    width:42px;
+    height:42px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:12px;
+
+    background:var(--light-color);
+
+}
+
+.section-title i{
+
+    color:var(--main-color);
+
+}
+
+.detail-label{
+
+    color:var(--main-color);
+    font-weight:600;
+    margin-bottom:6px;
+
+}
+
+.detail-value{
+
+    font-weight:600;
+
+}
+
+.detail-pill{
+
+    display:inline-block;
+
+    padding:8px 15px;
+
+    border-radius:10px;
+
+    background:var(--light-color);
+
+    color:var(--main-color);
+
+    font-weight:700;
+
+}
+
+.stat-card{
+
+    border:none;
+    border-radius:15px;
+
+}
+
+.stat-card .card-body{
+
+    padding:20px;
+
+}
+
+.stat-title{
+
+    font-size:.80rem;
+    font-weight:600;
+
+}
+
+.stat-value{
+
+    font-size:1.45rem;
+    font-weight:700;
+
+}
+
+</style>
+
+{% endblock %}
+
+{% block toolbar_actions %}
+
+<a href="{% url 'mainapp:liste_comptes' %}"
+   class="btn btn-light">
+
+    <i class="bi bi-arrow-left"></i>
+
+    Retour
+
+</a>
+
+<a href="/portefeuilles/{{ obj.pk }}/certificat-pdf/"
+   target="_blank"
+   class="btn btn-light">
+    <i class="bi bi-award"></i>
+    Certificat d'actions
+</a>
+
+<a href="{% url 'mainapp:attestation_titre' obj.public_id %}"
+   target="_blank"
+   class="btn btn-light">
+    <i class="bi bi-file-earmark-text"></i>
+    Attestation de titre
+</a>
+
+{% comment %}
+    <a href="{% url 'mainapp:historique_mouvements_pdf' obj.client.id obj.titre.id %}"
+       target="_blank"
+       class="btn btn-light">
+        <i class="bi bi-clock-history"></i>
+        Historique mouvements
+    </a>
+{% endcomment %}
+
+<a href="{% url 'mainapp:achat_titres' %}?portefeuille={{ obj.pk }}"
+   class="btn btn-primary">
+    <i class="bi bi-cart-plus"></i>
+    Vente de titre
+</a>
+
+<a href="{% url 'mainapp:transfert_titres' %}?portefeuille={{obj.pk}}"
+   class="btn btn-light-primary">
+    <i class="bi bi-arrow-left-right"></i>
+    Transfert de titre
+</a>
+
+{% comment %}
+    <a href="#"
+       class="btn btn-primary">
+
+        <i class="bi bi-pencil"></i>
+
+        Modifier
+
+    </a>
+{% endcomment %}
+
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    <!-- ================= HEADER ================= -->
+
+    <div class="order-head">
+
+        <div class="bank">
+
+            <div class="logo">
+
+                <i class="bi bi-wallet2"></i>
+
+            </div>
+
+            <div>
+
+                <h1>
+
+                    Portefeuille de
+
+                    {{ obj.client }}
+
+                </h1>
+
+                <div class="sub">
+
+                    {{ obj.client.num_compte }}
+
+                    •
+
+                    {{ obj.etablissement }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="d-flex gap-3 flex-wrap">
+
+            <span class="badge badge-light-primary fs-6">
+
+                {{ obj.titre }}
+
+            </span>
+
+            <span class="badge badge-light-success fs-6">
+
+                {{ obj.nb_titre }} titres
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- ================= TABLEAU DE BORD ================= -->
+
+    <div class="row g-5 mb-8">
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-primary">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-primary">
+
+                        Nombre de titres
+
+                    </div>
+
+                    <div class="stat-value">
+
+                        {{ obj.nb_titre }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-success">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-success">
+
+                        Titre
+
+                    </div>
+
+                    <div class="stat-value fs-5">
+
+                        {{ obj.titre }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-info">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-info">
+
+                        Établissement
+
+                    </div>
+
+                    <div class="stat-value fs-5">
+
+                        {{ obj.etablissement }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="card stat-card bg-light-warning">
+
+                <div class="card-body">
+
+                    <div class="stat-title text-warning">
+
+                        Dernier mouvement
+
+                    </div>
+
+                    <div class="stat-value fs-6">
+
+                        {{ obj.dernier_mouv|date:"d/m/Y"|default:"-" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= DEBUT DES SECTIONS ================= -->
+
+    <div class="row g-7">
+            <!-- ================= SOUSCRIPTEUR ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-person-fill"></i>
+
+                        </span>
+
+                        Souscripteur
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Nom et prénom
+                            </div>
+
+                            <div class="detail-value fs-5">
+
+                                {{ obj.client }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Numéro de compte
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.client.num_compte|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Catégorie
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.client.categorie|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Téléphone
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.client.telephone|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Établissement
+
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.etablissement }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= TITRE ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-graph-up-arrow"></i>
+
+                        </span>
+
+                        Titre
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Désignation
+                            </div>
+
+                            <div class="detail-value fs-5">
+
+                                {{ obj.titre }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Code ISIN
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.titre.code_isin|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Symbole
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.titre.symbole|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Valeur nominale
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.titre.valeur_nominale|default:"-" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Nature
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.titre.type_titre|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ================= DEBUT ETABLISSEMENT ================= -->
+
+    <div class="row g-7 mt-2">
+            <!-- ================= ETABLISSEMENT ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-building"></i>
+
+                        </span>
+
+                        Établissement
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-12">
+
+                            <div class="detail-label">
+                                Établissement
+                            </div>
+
+                            <div class="detail-value fs-5">
+
+                                {{ obj.etablissement }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Code
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.etablissement.code|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Sigle
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.etablissement.sigle|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Ville
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.etablissement.ville.nom_ville|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Type de commission
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="badge badge-light-primary">
+
+                                    {{ obj.etablissement.type_com|default:"-" }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- ================= INFORMATIONS DU PORTEFEUILLE ================= -->
+
+        <div class="col-xl-6">
+
+            <div class="card card-section h-100">
+
+                <div class="card-header border-0">
+
+                    <h3 class="card-title section-title">
+
+                        <span class="num">
+
+                            <i class="bi bi-wallet2"></i>
+
+                        </span>
+
+                        Informations du portefeuille
+
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row gy-6">
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Nombre de titres
+                            </div>
+
+                            <div class="detail-value">
+
+                                <span class="detail-pill">
+
+                                    {{ obj.nb_titre }}
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Dernier mouvement
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.dernier_mouv|date:"d/m/Y"|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Date de création
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.date_creat|date:"d/m/Y"|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Dernière modification
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.date_modif|date:"d/m/Y"|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Créé par
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.nom_creat|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-md-6">
+
+                            <div class="detail-label">
+                                Modifié par
+                            </div>
+
+                            <div class="detail-value">
+
+                                {{ obj.nom_modif|default:"-" }}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <! -- ==================TITRE INDEX================ -->
+    <div class="card card-section mt-8">
+        <div class="card-header border-0">
+
+            <h3 class="card-title section-title">
+
+                <span class="num">
+
+                    <i class="bi bi-graph-up-arrow"></i>
+
+                </span>
+
+                Index des actions
+
+            </h3>
+
+        </div>
+        <div class="card-body">
+
+        {% if obj.index %}
+
+        <div class="table-responsive">
+
+            <table class="table table-row-bordered table-hover align-middle gs-0 gy-4">
+
+                <thead>
+
+                    <tr class="fw-bold text-muted bg-light">
+
+                        <th width="60">#</th>
+
+                        <th>Début index</th>
+
+                        <th>Fin index</th>
+
+                        <th class="text-end">Nombre d'actions</th>
+
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    {% for ind in obj.index %}
+
+                    <tr>
+
+                        <td>
+
+                            <span class="badge badge-light-primary">
+
+                                {{ forloop.counter }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            <span class="fw-bold">
+
+                                {{ ind.debut_index }}
+
+                            </span>
+
+                        </td>
+
+                        <td>
+
+                            {{ ind.fin_index }}
+
+                        </td>
+
+                        <td class="text-end">
+
+                            {{ ind.quantite|default:"0" }}
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% else %}
+
+            <div class="alert alert-light-info d-flex align-items-center">
+
+                <i class="ki-duotone ki-information-5 fs-2 me-3"></i>
+
+                <div>
+
+                    Aucun titre n'est associé à ce souscripteur.
+
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    </div>
+    </div>
+
+
+    <!-- ================= HISTORIQUE ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-header border-0">
+
+            <h3 class="card-title section-title">
+
+                <span class="num">
+
+                    <i class="bi bi-clock-history"></i>
+
+                </span>
+
+                Historique
+
+            </h3>
+
+        </div>
+
+        <div class="card-body">
+
+            <div class="row">
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Créé par
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.nom_creat|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Date création
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.date_creat|date:"d/m/Y"|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Modifié par
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.nom_modif|default:"-" }}
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-3">
+
+                    <div class="detail-label">
+                        Date modification
+                    </div>
+
+                    <div class="detail-value">
+
+                        {{ obj.date_modif|date:"d/m/Y"|default:"-" }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+        <!-- ================= ACTIONS ================= -->
+
+    <div class="card card-section mt-8">
+
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+                <a href="#"
+                   class="btn btn-light-primary">
+
+                    <i class="bi bi-arrow-left me-2"></i>
+
+                    Retour à la liste
+
+                </a>
+
+                {% comment %}
+                    <div class="d-flex gap-3">
+
+                    <a href="#"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-pencil-square me-2"></i>
+
+                        Modifier
+
+                    </a>
+
+                    <button type="button"
+                            onclick="window.print();"
+                            class="btn btn-light">
+
+                        <i class="bi bi-printer me-2"></i>
+
+                        Imprimer
+
+                    </button>
+
+                </div>
+                {% endcomment %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+
+<script src="{% static 'mainapp/plugins/global/plugins.bundle.js' %}"></script>
+
+<script src="{% static 'mainapp/js/scripts.bundle.js' %}"></script>
+
+<script src="{% static 'mainapp/js/widgets.bundle.js' %}"></script>
+
+<script src="{% static 'mainapp/js/custom/widgets.js' %}"></script>
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    // Animation légère des cartes
+
+    document.querySelectorAll(".card-section").forEach(function(card){
+
+        card.addEventListener("mouseenter", function(){
+
+            this.style.transform = "translateY(-2px)";
+            this.style.transition = ".25s";
+
+        });
+
+        card.addEventListener("mouseleave", function(){
+
+            this.style.transform = "translateY(0)";
+
+        });
+
+    });
+
+});
+
+</script>
+
+{% endblock %}

@@ -14,7 +14,7 @@
 <style>
 	/* --- Données : en-tête --- */
 	.donnees-hero {
-		background: linear-gradient(135deg, #1b1b29 0%, #2b2b46 45%, #3699ff 140%);
+		background: #001051;//linear-gradient(135deg, #1b1b29 0%, #2b2b46 45%, #3699ff 140%);
 		border-radius: 1rem;
 		overflow: hidden;
 		position: relative;
@@ -88,11 +88,11 @@
 
 	<!--begin::Établissement-->
 	<div class="col-md-6 col-xl-4">
-		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-primary);">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #001051;">
 			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
 				<span class="symbol symbol-70px mx-auto mb-5">
-					<span class="symbol-label bg-light-primary">
-						<i class="ki-duotone ki-briefcase fs-2x text-primary">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-briefcase fs-2x text-success">
 							<span class="path1"></span>
 							<span class="path2"></span>
 						</i>
@@ -102,7 +102,7 @@
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Créer et gérer les établissements financiers et leurs informations.</p>
 				<a href="{% url 'mainapp:liste_ets' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
 					Ouvrir
-					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+					<i class="fs-5 ms-1">
 						<span class="path1"></span>
 						<span class="path2"></span>
 					</i>
@@ -114,7 +114,7 @@
 
 	<!--begin::Souscripteur-->
 	<div class="col-md-6 col-xl-4">
-		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-success);">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #001051;">
 			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
 				<span class="symbol symbol-70px mx-auto mb-5">
 					<span class="symbol-label bg-light-success">
@@ -128,9 +128,9 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Souscripteurs</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Enregistrer et suivre les souscripteurs et leurs portefeuilles.</p>
-				<a href="{% url 'mainapp:liste_clients' %}" class="btn btn-sm btn-light-success fw-semibold w-100">
+				<a href="{% url 'mainapp:liste_clients' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
 					Ouvrir
-					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+					<i class="fs-5 ms-1">
 						<span class="path1"></span>
 						<span class="path2"></span>
 					</i>
@@ -142,11 +142,11 @@
 
 	<!--begin::Ordre de bourse-->
 	<div class="col-md-6 col-xl-4">
-		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-info);">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #001051;">
 			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
 				<span class="symbol symbol-70px mx-auto mb-5">
-					<span class="symbol-label bg-light-info">
-						<i class="ki-duotone ki-chart-simple fs-2x text-info">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-chart-simple fs-2x text-success">
 							<span class="path1"></span>
 							<span class="path2"></span>
 							<span class="path3"></span>
@@ -156,9 +156,9 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Ordres de bourse</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Saisir et traiter les ordres d'achat et de vente sur le marché.</p>
-				<a href="{% url 'mainapp:liste_operations' %}" class="btn btn-sm btn-light-info fw-semibold w-100">
+				<a href="{% url 'mainapp:liste_operations' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
 					Ouvrir
-					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+					<i class="fs-5 ms-1">
 						<span class="path1"></span>
 						<span class="path2"></span>
 					</i>
@@ -167,6 +167,31 @@
 		</div>
 	</div>
 	<!--end::Ordre de bourse-->
+
+	<!--begin::Titre-->
+	<div class="col-md-6 col-xl-4">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #E20000;">
+			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
+				<span class="symbol symbol-70px mx-auto mb-5">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-file-added fs-2x text-success">
+							<span class="path1"></span>
+							<span class="path2"></span>
+						</i>
+					</span>
+				</span>
+				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Titre</h3>
+				<p class="fs-7 text-muted flex-grow-1 mb-6">Gérer les titres et leurs caractéristiques.</p>
+				<a href="{% url 'mainapp:liste_titres' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
+					Configurer
+					<i class="fs-5 ms-1">
+						<span class="path1"></span><span class="path2"></span>
+					</i>
+				</a>
+			</div>
+		</div>
+	</div>
+	<!--end::Titre-->
 
 	<!--begin::Nantissement-->
 	{% comment %}
@@ -199,11 +224,11 @@
 
 	<!--begin::Génération des comptes d'actionnaires-->
 	<div class="col-md-6 col-xl-4">
-		<div class="card card-flush h-100 donnees-card" style="--accent: var(--bs-danger);">
+		<div class="card card-flush h-100 donnees-card" style="--accent: #E20000;">
 			<div class="card-body d-flex flex-column text-center p-8 p-lg-9">
 				<span class="symbol symbol-70px mx-auto mb-5">
-					<span class="symbol-label bg-light-danger">
-						<i class="ki-duotone ki-data fs-2x text-danger">
+					<span class="symbol-label bg-light-success">
+						<i class="ki-duotone ki-data fs-2x text-success">
 							<span class="path1"></span>
 							<span class="path2"></span>
 							<span class="path3"></span>
@@ -212,9 +237,9 @@
 				</span>
 				<h3 class="fs-4 fw-bold text-gray-900 mb-2">Comptes d'actionnaires</h3>
 				<p class="fs-7 text-muted flex-grow-1 mb-6">Générer automatiquement les comptes pour l'ensemble des actionnaires.</p>
-				<a href="{% url 'mainapp:liste_comptes' %}" class="btn btn-sm btn-light-danger fw-semibold w-100">
+				<a href="{% url 'mainapp:liste_comptes' %}" class="btn btn-sm btn-light-primary fw-semibold w-100">
 					Générer
-					<i class="ki-duotone ki-arrow-right fs-5 ms-1">
+					<i class="fs-5 ms-1">
 						<span class="path1"></span>
 						<span class="path2"></span>
 					</i>

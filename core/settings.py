@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-98v5c5_#l24xd4+hxr_qrs5)rq$retxk&(ipef7dk*lu)qo!21
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['192.168.1.209','localhost','127.0.0.1','192.168.1.178']
 
 
 # Application definition
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mainapp.apps.MainappConfig',
+    'crispy_forms',
+    'crispy_bootstrap5',
     'django_extensions',
 ]
 
@@ -80,6 +82,7 @@ TEMPLATES = [
                 'mainapp.context_processor.t_operation_form',
                 'mainapp.context_processor.t_titre_form',
                 'mainapp.context_processor.reset_email_form',
+                'mainapp.context_processor.confirm_password_form',
             ],
         },
     },
@@ -101,12 +104,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.oracle',
-        'NAME': '''
+        'NAME': f"""
             (DESCRIPTION=
-                (ADDRESS=(PROTOCOL=TCP)(HOST=192.168.1.209)(PORT=1521))
-                (CONNECT_DATA=(SERVICE_NAME=XEPDB1))
+                (ADDRESS=(PROTOCOL=TCP)(HOST={os.environ.get('DB_HOST')})(PORT={os.environ.get('DB_PORT')}))
+                (CONNECT_DATA=(SERVICE_NAME={os.environ.get('DB_SERVICE')}))
             )
-        ''',
+        """,
         'USER': os.environ.get('DB_USER'),
         'PASSWORD': os.environ.get('DB_PWD'),
     }
@@ -133,11 +136,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGES = [
+    ("fr", "Français"),
+]
+
+LANGUAGE_CODE = 'fr'
 
 TIME_ZONE = 'UTC'
 

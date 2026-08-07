@@ -1,0 +1,50 @@
+<!-- PAGE VENDEUR -->
+<head>
+    <style>
+        .page {
+            page-break-after: always;
+        }
+
+
+        .separation {
+            margin:8px 0;
+            text-align:center;
+            font-size:10px;
+        }
+    </style>
+</head>
+<div class="page">
+
+
+    {% include "impressions/avis_transaction_detail.html" with avis=avis_vendeur exemplaire="EXEMPLAIRE CLIENT VENDEUR" %}
+
+
+    <div class="separation">
+        ------------------------------
+    </div>
+
+
+    {% include "impressions/avis_transaction_detail.html" with avis=avis_vendeur exemplaire="EXEMPLAIRE BANQUE VENDEUR" %}
+
+
+</div>
+
+
+
+<!-- PAGE ACHETEUR -->
+
+<div class="page">
+
+
+    {% include "impressions/avis_transaction_detail.html" with avis=avis_acheteur exemplaire="EXEMPLAIRE CLIENT ACHETEUR" %}
+
+
+    <div class="separation">
+        ------------------------------
+    </div>
+
+
+    {% include "impressions/avis_transaction_detail.html" with avis=avis_acheteur exemplaire="EXEMPLAIRE BANQUE ACHETEUR" %}
+
+
+</div>

@@ -4,7 +4,7 @@ from django.contrib.auth.base_user import BaseUserManager, AbstractBaseUser
 from django.contrib.auth.models import PermissionsMixin
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import models
+from django.db import models, transaction
 from django.db.models import Sum, Count
 from django.http import Http404
 
@@ -50,6 +50,14 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    ROLE_OPERATEUR = 'Opérateur'
+    ROLE_ADMINISTRATEUR = 'Administrateur'
+
+    ROLE_CHOICES = [
+        (ROLE_OPERATEUR, 'Opérateur'),
+        (ROLE_ADMINISTRATEUR, 'Administrateur'),
+    ]
+
     public_id = models.UUIDField(db_index=True, unique=True, default=uuid.uuid4, editable=False)
     username = models.CharField(db_index=True, max_length=255, unique=True)
     photo = models.ImageField(null=True,blank=True)
@@ -59,6 +67,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_OPERATEUR)
+
 
     created = models.DateTimeField(auto_now=True)
     updated = models.DateTimeField(auto_now_add=True)
@@ -232,7 +242,15 @@ class Client(AbstractModel):
         return IndexTitre.objects.filter(client=self)
 
     def numero_client(self):
+        if self.old_id:
+            return str(self.id).zfill(8)
         return str(self.id).zfill(8)
+
+    def get_id(self):
+        if self.old_id:
+            return self.old_id
+        else:
+            return self.id
 
     def portefeuilles(self):
         return Portefeuille.objects.filter(client=self)
@@ -324,7 +342,7 @@ class Operation(AbstractModel):
     date_modif = models.DateField(null=True,blank=True)
     nom_creat = models.CharField(max_length=30,null=True,blank=True)
     nom_modif = models.CharField(max_length=30,null=True,blank=True)
-    est_valide = models.BooleanField(default=False)
+    est_valide = models.BooleanField(default=True)
     type_operation = models.ForeignKey(TypeOperation,null=True,blank=True,on_delete=models.SET_NULL)
 
     class Meta:
@@ -332,8 +350,16 @@ class Operation(AbstractModel):
 
         managed = False
         permissions = [
-            ("imp_avis_transaction", "Peut imprimer avis de transaction")
+            ("imprimer_doc", "Peut imprimer un document"),
+            ("valider_operation","Peut valider une opération")
         ]
+
+    def save(self, *args, **kwargs):
+        if self.cours_operation and self.cours_operation > 10000:
+            self.ircm = round((self.cours_operation - 10000) * 0.20)
+        else:
+            self.ircm = 0
+        super().save(*args, **kwargs)
 
     def creer_par(self):
         user_id = self.user_id
@@ -342,6 +368,18 @@ class Operation(AbstractModel):
             return user
         except:
             return None
+
+    def numero_ordre(self):
+        default = 1
+        if SequenceOrdre.objects.exists():
+            return default
+        else:
+            queryset = SequenceOrdre.objects.last()
+            return queryset.dernier_numero+1
+
+
+    def nbportef_ben_final(self):
+        return self.nb_titre+self.nbportefben
 
 
 class Etablissement(AbstractModel):
@@ -373,6 +411,10 @@ class Etablissement(AbstractModel):
 
     def __str__(self):
         return self.libelle
+
+    @property
+    def nb_clients(self):
+        return Client.objects.filter(banque=self).count()
 
     class Meta:
         db_table = 'ETABLISSEMENT'
@@ -521,6 +563,44 @@ class JournalAudit(AbstractModel):
 
     def __str__(self):
         return f"{self.get_action_display()} - {self.object_repr} par {self.user}"
+
+class SequenceCertificat(models.Model):
+    dernier_numero = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Séquence de certificat"
+        verbose_name_plural = "Séquences de certificat"
+        db_table = 'SEQUENCE_CERTIFICAT'
+
+    def __str__(self):
+        return f"Dernier numéro émis : {self.dernier_numero}"
+
+    @classmethod
+    def prochain_numero(cls):
+        with transaction.atomic():
+            seq, _ = cls.objects.select_for_update().get_or_create(pk=1)
+            seq.dernier_numero += 1
+            seq.save(update_fields=["dernier_numero"])
+            return seq.dernier_numero
+
+class SequenceOrdre(models.Model):
+    dernier_numero = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        verbose_name = "Séquence ordre"
+        verbose_name_plural = "Séquences ordre"
+        db_table = 'SEQUENCE_ORDRE'
+
+    def __str__(self):
+        return f"Dernier numéro émis : {self.dernier_numero}"
+
+    @classmethod
+    def prochain_numero(cls):
+        with transaction.atomic():
+            seq, _ = cls.objects.select_for_update().get_or_create(pk=1)
+            seq.dernier_numero += 1
+            seq.save(update_fields=["dernier_numero"])
+            return seq.dernier_numero
 
 
 # class EmissionTitre(models.Model):

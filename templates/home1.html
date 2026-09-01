@@ -56,12 +56,6 @@
     .op-card .symbol-label{ transition:transform .25s ease; }
     .op-card:hover .symbol-label{ transform:scale(1.08); }
     .op-card .op-go{ color:var(--accent, var(--afg-blue)); }
-
-     #afg_chart_operations,
-     #afg_chart_operations > div {
-       width: 100% !important;
-       min-width: 0;
-     }
 </style>
 {% endblock %}
 
@@ -183,21 +177,15 @@
             <div class="card-header pt-6">
                 <div class="card-title flex-column">
                     <h3 class="fw-bold mb-1">Évolution des opérations</h3>
-                    <span class="fs-7 text-muted">Nombre d'opérations par mois — {{dernier_an_op}}</span>
+                    <span class="fs-7 text-muted">Volume échangé et nombre d'opérations sur l'année</span>
                 </div>
                 <div class="card-toolbar">
-                    <span class="badge badge-light-primary me-2"><i class="ki-duotone ki-dot fs-8 me-1"></i>Total</span>
-                    <span class="badge badge-light-warning me-2"><i class="ki-duotone ki-dot fs-8 me-1"></i>Transferts</span>
-                    <span class="badge badge-light-success"><i class="ki-duotone ki-dot fs-8 me-1"></i>Ventes</span>
+                    <span class="badge badge-light-success me-2"><i class="ki-duotone ki-dot fs-8 me-1"></i>Achats</span>
+                    <span class="badge badge-light-danger"><i class="ki-duotone ki-dot fs-8 me-1"></i>Ventes</span>
                 </div>
             </div>
             <div class="card-body pt-4">
-                <div style="position:relative; height:320px; width:100%;">
-                    <canvas
-                        id="operationsChart"
-                        data-url="{% url 'mainapp:operations_par_mois' %}"
-                    ></canvas>
-                </div>
+                <div id="afg_chart_operations" style="height:320px;"></div>
             </div>
         </div>
     </div>
@@ -257,11 +245,11 @@
                                     {% endif %}
                                 </td>
 
-                                <td class="text-end fw-bold">{{ op.nb_titre }}</td>
+                                <td class="text-end fw-bold">{{ op.nb_titre }}</td>*
                                 {% if op.date_ordre %}
                                     <td class="text-end fw-bold">{{ op.date_ordre }}</td>
                                 {% else %}
-                                    <td class="text-end fw-bold">Non définie</td>
+                                    <td class="text-end fw-bold">{{ op.date_ordre }}</td>
                                 {% endif %}
                                 <td class="text-end fw-bold">{{ op.type_operation.libelle }}</td>
                                 <td class="text-end">
@@ -426,3 +414,4 @@
 <script src="{% static 'mainapp/js/chart.umd.min.js' %}"></script>
 <script src="{% static 'mainapp/js/custom/home.js' %}"></script>
 {% endblock %}
+

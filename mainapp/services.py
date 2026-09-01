@@ -22,6 +22,8 @@ from mainapp.models import IndexTitre, Titre, Portefeuille, Operation
 
 from django.conf import settings
 
+from mainapp.utils import generer_numero_certificat
+
 LOGO_PATH = os.path.join(settings.BASE_DIR, "static", "mainapp/logos", "logo_AFG_Bank.png")
 
 from reportlab.lib.units import cm
@@ -371,6 +373,163 @@ def construire_pdf_registre_central(public_id, buffer=None, logo_path=LOGO_PATH)
         output.seek(0)
     return output
 
+# def generer_historique_mouvements_pdf(client, titre):
+#     operations = (
+#         Operation.objects
+#         .filter(
+#             Q(client=client) | Q(beneficiaire=client),
+#             titre=titre,
+#         )
+#         .order_by("date_ordre")
+#     )
+#
+#     lignes = []
+#     solde = 0
+#     total_credit = 0
+#     total_debit = 0
+#
+#     for op in operations:
+#         avant = solde
+#         nb = op.nb_titre or 0
+#
+#         if op.sens == "C":
+#             credit, debit = nb, None
+#             solde += nb
+#         else:  # op.sens == "D"
+#             credit, debit = None, nb
+#             solde -= nb
+#
+#         total_credit += credit or 0
+#         total_debit += debit or 0
+#
+#         libelle = op.type_operation.libelle if op.type_operation_id else (op.code_op or "")
+#
+#         lignes.append([
+#             op.date_ordre.strftime("%d/%m/%Y") if op.date_ordre else "",
+#             libelle,
+#             avant,
+#             credit,
+#             debit,
+#             solde,
+#         ])
+#
+#     nombre_actions_final = solde
+#     valeur_nominale_unitaire = getattr(titre, "nominal", 0) or 0
+#     valeur_nominale_totale = nombre_actions_final * valeur_nominale_unitaire
+#
+#     buffer = BytesIO()
+#
+#     doc = SimpleDocTemplate(
+#         buffer,
+#         pagesize=A4,
+#         topMargin=15 * mm,
+#         bottomMargin=15 * mm,
+#         leftMargin=15 * mm,
+#         rightMargin=15 * mm,
+#     )
+#
+#     styles = getSampleStyleSheet()
+#     style_normal = ParagraphStyle("normal", parent=styles["Normal"], fontSize=9)
+#     style_titre = ParagraphStyle(
+#         "titre", parent=styles["Heading1"], alignment=TA_CENTER,
+#         fontSize=13, spaceAfter=2,
+#     )
+#     style_soustitre = ParagraphStyle(
+#         "soustitre", parent=styles["Normal"], alignment=TA_CENTER,
+#         fontSize=10, fontName="Helvetica-Bold",
+#     )
+#     style_date_droite = ParagraphStyle("date_droite", parent=style_normal, alignment=TA_RIGHT)
+#
+#     story = []
+#
+#     # --- En-tête : logo gauche, titre centré, logo droite, date en haut à droite ---
+#     date_str = f"Libreville, le {date.today().strftime('%d/%m/%Y')}"
+#     story.append(Paragraph(date_str, style_date_droite))
+#     story.append(Spacer(1, 4))
+#
+#     if os.path.exists(LOGO_PATH):
+#         logo_gauche = Image(LOGO_PATH, width=28 * mm, height=14 * mm)
+#         logo_droite = Image(LOGO_PATH, width=28 * mm, height=14 * mm)
+#     else:
+#         logo_gauche = Paragraph("", style_normal)
+#         logo_droite = Paragraph("", style_normal)
+#
+#     titre_bloc = [
+#         Paragraph("HISTORIQUE DES MOUVEMENTS", style_titre),
+#         Paragraph(f"TITRE : {titre.libelle.upper()}", style_soustitre),
+#     ]
+#
+#     entete_table = Table(
+#         [[logo_gauche, titre_bloc, logo_droite]],
+#         colWidths=[35 * mm, 110 * mm, 35 * mm],
+#     )
+#     entete_table.setStyle(TableStyle([
+#         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+#         ("ALIGN", (0, 0), (0, 0), "LEFT"),
+#         ("ALIGN", (2, 0), (2, 0), "RIGHT"),
+#     ]))
+#     story.append(entete_table)
+#     story.append(Spacer(1, 10))
+#
+#     # --- Informations du titulaire ---
+#     nom_complet = getattr(client, "nom_complet", None) or f"{client.nom_client} {client.prenom_client}".strip()
+#     adresse = getattr(client, "adresse", "") or ""
+#     telephone = getattr(client, "telephone", "") or ""
+#
+#     info_data = [
+#         [Paragraph(f"Identifiant : <b>{client.indentifiant}</b>", style_normal), ""],
+#         [Paragraph(f"Nom du titulaire : <b>{nom_complet.upper()}</b>", style_normal), ""],
+#         [Paragraph(f"Adresse : {adresse}", style_normal),
+#          Paragraph(f"Tél. : {telephone}", style_normal)],
+#         [Paragraph(f"Nombre d'actions : <b>{formater_nombre(nombre_actions_final)}</b>", style_normal),
+#          Paragraph(f"Valeur nominale : <b>{formater_nombre(valeur_nominale_totale)}</b>", style_normal)],
+#     ]
+#     info_table = Table(info_data, colWidths=[110 * mm, 70 * mm])
+#     info_table.setStyle(TableStyle([
+#         ("VALIGN", (0, 0), (-1, -1), "TOP"),
+#         ("TOPPADDING", (0, 0), (-1, -1), 2),
+#         ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+#     ]))
+#     story.append(info_table)
+#     story.append(Spacer(1, 10))
+#
+#     entetes = ["Date", "Libellé mouvement", "Nbre avant\ntransaction", "CREDIT", "DEBIT", "Nbre après\ntransaction"]
+#     data = [entetes]
+#     for date_str_ligne, libelle, avant, credit, debit, apres in lignes:
+#         data.append([
+#             date_str_ligne,
+#             libelle,
+#             avant,
+#             credit,
+#             debit,
+#             apres,
+#         ])
+#     data.append(["", "TOTAL :", "", formater_nombre(total_credit), formater_nombre(total_debit), ""])
+#
+#     col_widths = [22 * mm, 55 * mm, 28 * mm, 20 * mm, 20 * mm, 28 * mm]
+#     mouvements_table = Table(data, colWidths=col_widths, repeatRows=1)
+#
+#     style_commands = [
+#         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+#         ("FONTSIZE", (0, 0), (-1, -1), 8.5),
+#         ("BACKGROUND", (0, 0), (-1, 0), colors.whitesmoke),
+#         ("ALIGN", (2, 0), (-1, -1), "CENTER"),
+#         ("ALIGN", (0, 0), (1, -1), "LEFT"),
+#         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+#         ("GRID", (0, 0), (-1, -2), 0.5, colors.black),
+#         ("BOX", (0, 0), (-1, -1), 0.75, colors.black),
+#         ("LINEABOVE", (0, -1), (-1, -1), 1, colors.black),
+#         ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
+#         ("SPAN", (0, -1), (1, -1)),  # fusionne Date + Libellé sur la ligne TOTAL
+#         ("TOPPADDING", (0, 0), (-1, -1), 4),
+#         ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+#     ]
+#     mouvements_table.setStyle(TableStyle(style_commands))
+#     story.append(mouvements_table)
+#
+#     doc.build(story)
+#     buffer.seek(0)
+#     return buffer.getvalue()
 
 def generer_historique_mouvements_pdf(client, titre):
     operations = (
@@ -412,8 +571,8 @@ def generer_historique_mouvements_pdf(client, titre):
             op.date_ordre.strftime("%d/%m/%Y") if op.date_ordre else "",
             libelle,
             avant,
-            debit,
             credit,
+            debit,
             solde,
         ])
 
@@ -531,6 +690,10 @@ def generer_historique_mouvements_pdf(client, titre):
     mouvements_table.setStyle(TableStyle(style_commands))
     story.append(mouvements_table)
 
+    doc.title = f"Historique des mouvements - {client.nom_client} {client.prenom_client}"
+    doc.author = "AFG Bank"
+    doc.subject = "Historique des mouvements de titres"
+
     doc.build(story)
     buffer.seek(0)
     return buffer.getvalue()
@@ -566,7 +729,7 @@ def _construire_styles():
     return style_normal, style_titre, style_soustitre, style_date_droite, style_montant
 
 
-def _construire_bloc_certificat(portefeuille, styles):
+def _construire_bloc_certificat(portefeuille, styles, numero_certificat):
     """Construit les flowables composant UN exemplaire du certificat."""
     style_normal, style_titre, style_soustitre, style_date_droite, style_montant = styles
 
@@ -592,7 +755,7 @@ def _construire_bloc_certificat(portefeuille, styles):
 
     titre_bloc = [
         Paragraph(f"Certificat d'Actions du Titre {titre.libelle.upper()}", style_titre),
-        Paragraph(f"N° : {client.numero_client()}", style_soustitre),
+        Paragraph(f"N° : {numero_certificat}", style_soustitre),
     ]
 
     entete_table = Table(
@@ -659,7 +822,7 @@ def _construire_bloc_certificat(portefeuille, styles):
     id_table = Table(
         [
             ["Identifiant actionnaire", "Nombre d'actions"],
-            [str(client.indentifiant), str(nb_actions)],
+            [str(client.get_id()), str(nb_actions)],
         ],
         colWidths=[45 * mm, 45 * mm],
         hAlign="CENTER",
@@ -676,7 +839,7 @@ def _construire_bloc_certificat(portefeuille, styles):
     story.append(Spacer(1, 12))
 
     story.append(Paragraph(
-        "Ce certificat annule et remplace tous les autres certificats précédemment délivrés par la BICIG",
+        "Ce certificat annule et remplace tous les autres certificats précédemment délivrés par AFG Bank",
         style_normal,
     ))
     story.append(Spacer(1, 22))
@@ -708,13 +871,19 @@ def generer_certificat_actions_pdf(portefeuille):
     styles = _construire_styles()
     story = []
 
-    story.extend(_construire_bloc_certificat(portefeuille, styles))
+    numero_certificat = generer_numero_certificat()
+
+    story.extend(_construire_bloc_certificat(portefeuille, styles, numero_certificat))
 
     story.append(Spacer(1, 22 * mm))
     story.append(HRFlowable(width="100%", thickness=0.75, color=colors.black))
     story.append(Spacer(1, 22 * mm))
 
-    story.extend(_construire_bloc_certificat(portefeuille, styles))
+    story.extend(_construire_bloc_certificat(portefeuille, styles, numero_certificat))
+
+    doc.title = f"Certificat d'actions - {portefeuille.client.nom_client} {portefeuille.client.prenom_client}"
+    doc.author = "AFG Bank"
+    doc.subject = "Historique des mouvements de titres"
 
     doc.build(story)
     buffer.seek(0)

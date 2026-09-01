@@ -9,6 +9,7 @@ urlpatterns = [
     path('connexion', views.se_connecter,name="connexion"),
     path('deconnexion', views.se_deconnecter,name="deconnexion"),
     path('', views.home,name="home"),
+    path('operations-par-mois/', views.operations_par_mois, name='operations_par_mois'),
     path('donnees', views.donnees,name="donnees"),
     path('impressions', views.impressions,name="impressions"),
     path('parametres', views.parametres,name="parametres"),
@@ -82,5 +83,6 @@ urlpatterns = [
     path("operations/<uuid:public_id>/avis-transaction-achat-vente.pdf",views.avis_transaction_achat_vente_pdf,name="avis_transaction_achat_vente_pdf"),
     path("souscripteurs/<str:public_id>/portefeuilles/ajouter/",views.ajouter_portefeuille,name="ajouter_portefeuille"),
     path("utilisateurs/<str:public_id>/toggle-actif/",views.toggle_utilisateur_actif,name="toggle_utilisateur_actif"),
+    path('operations/<uuid:public_id>/valider/', views.valider_operation, name='valider_operation'),
 
 ]

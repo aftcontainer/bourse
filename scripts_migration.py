@@ -284,6 +284,7 @@ def recharger_operations1():
     }
 
     erreurs_detail = []
+    benef = None
 
     for row in cursor1:
         stats['total'] += 1
@@ -310,6 +311,10 @@ def recharger_operations1():
             stats['client_manquant'] += 1
             erreurs_detail.append(('client_manquant', row[0:4]))
             continue
+
+
+
+
 
         try:
             type_titre = TypeTitre.objects.get(old_id=row[2])

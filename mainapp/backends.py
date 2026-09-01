@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.backends import ModelBackend
 from django.db.models import Q
+from django.contrib.auth.backends import BaseBackend
+from django.contrib.auth.models import Permission
 
 User = get_user_model()
 
@@ -27,3 +29,21 @@ class EmailOrUsernameBackend(ModelBackend):
         if user.check_password(password) and self.user_can_authenticate(user):
             return user
         return None
+
+class RoleBackend(BaseBackend):
+    def get_all_permissions(self, user_obj, obj=None):
+        if not user_obj.is_active or user_obj.is_anonymous:
+            return set()
+
+        role_ids = user_obj.userrole_set.filter(
+            role__is_active=True
+        ).values_list('role_id', flat=True)
+
+        perms = Permission.objects.filter(
+            roles__id__in=role_ids
+        ).values_list('content_type__app_label', 'codename')
+
+        return {f"{app_label}.{codename}" for app_label, codename in perms}
+
+    def has_perm(self, user_obj, perm, obj=None):
+        return perm in self.get_all_permissions(user_obj, obj)

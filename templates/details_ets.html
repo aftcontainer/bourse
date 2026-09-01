@@ -278,12 +278,6 @@
 
             </span>
 
-            <span class="badge badge-light-success fs-6">
-
-                {{ obj.type_com|default:"Commission" }}
-
-            </span>
-
         </div>
 
     </div>
@@ -348,13 +342,13 @@
 
                     <div class="stat-title text-info">
 
-                        Type de commission
+                        Nombre de cliens
 
                     </div>
 
                     <div class="stat-value fs-5">
 
-                        {{ obj.type_com|default:"-" }}
+                        {{ obj.nb_clients|default:"0" }}
 
                     </div>
 
@@ -394,8 +388,8 @@
 
     <div class="row g-7">
             <!-- ================= Identification ================= -->
-
-        <div class="col-xl-6">
+        {% comment %}
+            <div class="col-xl-6">
 
             <div class="card card-section h-100">
 
@@ -462,14 +456,14 @@
                         <div class="col-md-6">
 
                             <div class="detail-label">
-                                Type de commission
+                                Nombre de clients
                             </div>
 
                             <div class="detail-value">
 
                                 <span class="badge badge-light-info">
 
-                                    {{ obj.type_com|default:"—" }}
+                                    {{ obj.nb_clients|default:"0" }}
 
                                 </span>
 
@@ -502,10 +496,11 @@
             </div>
 
         </div>
+        {% endcomment %}
 
         <!-- ================= Coordonnées ================= -->
 
-        <div class="col-xl-6">
+        <div class="col-xl-12">
 
             <div class="card card-section h-100">
 
@@ -571,7 +566,7 @@
 
                         </div>
 
-                        <div class="col-12">
+                        <div class="col-6">
 
                             <div class="detail-label">
                                 Logo

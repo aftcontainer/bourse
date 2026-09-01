@@ -239,6 +239,13 @@ class TitreForm(forms.ModelForm):
         }
 
 class UserForm(forms.ModelForm):
+    ROLE_OPERATEUR = 'Opérateur'
+    ROLE_ADMINISTRATEUR = 'Administrateur'
+
+    ROLE_CHOICES = [
+        (ROLE_OPERATEUR, 'Opérateur'),
+        (ROLE_ADMINISTRATEUR, 'Administrateur'),
+    ]
 
     class Meta:
         model = User
@@ -249,8 +256,9 @@ class UserForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control form-control-solid'}),
             'email': forms.EmailInput(attrs={'class': 'form-control form-control-solid'}),
             'username': forms.TextInput(attrs={'class': 'form-control form-control-solid'}),
-        }
+            'role': forms.Select(attrs={'class': 'form-control form-control-solid'})
 
+        }
 
 
 class OperationForm(forms.ModelForm):
@@ -342,8 +350,8 @@ class VenteEtTransfertForm(forms.ModelForm):
             "brut", "montant", "commission", "tax", "css", "ircm",
             "nbportefben","num_ordre","num_seq_ordre","code_op",
             "etablissement_ben","tot_nbportebef",'type_operation'
-
         ]
+        read_only_fields = ['ircm']
         widgets = {
             "etablissement": forms.Select(attrs={"class": SELECT2, "data-control": "select2"}),
             "titre": forms.Select(attrs={"class": SELECT, "id": "id_titre"}),

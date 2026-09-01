@@ -73,6 +73,7 @@
 							<th class="min-w-125px">Etablissement</th>
 							<th class="min-w-125px">Beneficiaire</th>
 							<th class="min-w-125px">Nombre de titres</th>
+							<th class="min-w-125px">Type d'opération</th>
 							<th class="min-w-125px">Date</th>
 							<th class="text-end min-w-70px">Actions</th>
 						</tr>
@@ -186,7 +187,8 @@
                     <!--end::Souscription / Augmentation de capital-->
 
                     <!--begin::Report des actions-->
-                    <div class="col-md-6 col-xl-4">
+                    {% comment %}
+                        <div class="col-md-6 col-xl-4">
                         <a href="#" class="card card-flush h-100 op-card" style="--accent: var(--afg-blue);">
                             <div class="card-body d-flex flex-column p-7">
                                 <span class="symbol symbol-60px mb-5">
@@ -202,8 +204,8 @@
                             </div>
                         </a>
                     </div>
+                    {% endcomment %}
                     <!--end::Report des actions-->
-
                 </div>
             </div>
             <!--end::Corps-->

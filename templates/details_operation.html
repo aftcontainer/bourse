@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load thousands_separator %}
 
 {% block title %}
 Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
@@ -157,7 +158,11 @@ label{
                     {% endif %}
 
                     •
-                    {{ operation.created|date:"d/m/Y H:i" }}
+                    {% if operation.date_ordre %}
+                        {{ operation.date_ordre|date:"d/m/Y" }}
+                    {% else %}
+                        {{ operation.created|date:"d/m/Y H:i" }}
+                    {% endif %}
 
                 </div>
 
@@ -292,7 +297,7 @@ label{
 
                         <tr>
                             <th width="35%">Nom</th>
-                            <td>{{ operation.client }}</td>
+                            <td>{{ operation.client.nom_client }} {{ operation.client.prenom_client }}</td>
                         </tr>
 
                         <tr>
@@ -303,11 +308,6 @@ label{
                         <tr>
                             <th>Établissement</th>
                             <td>{{ operation.client.banque|default:"-" }}</td>
-                        </tr>
-
-                        <tr>
-                            <th>Portefeuille</th>
-                            <td>{{ portefeuille_vendeur }}</td>
                         </tr>
 
                         <tr>
@@ -354,7 +354,7 @@ label{
 
                     <tr>
                         <th width="35%">Nom</th>
-                        <td>{{ operation.beneficiaire.nom_client|default:"-" }}</td>
+                        <td>{{ operation.beneficiaire.nom_client|default:"-" }} {{ operation.beneficiaire.prenom_client|default:"-" }}</td>
                     </tr>
 
                     <tr>
@@ -365,11 +365,6 @@ label{
                     <tr>
                         <th>Établissement</th>
                         <td>{{ operation.beneficiaire.banque|default:"-" }}</td>
-                    </tr>
-
-                    <tr>
-                        <th>Portefeuille</th>
-                        <td>{{ portefeuille_beneficiaire }}</td>
                     </tr>
 
                     <tr>
@@ -385,7 +380,7 @@ label{
                         <th>Titres après</th>
                         <td>
                             <span class="badge badge-light-success">
-                                {{ operation.tot_nbportebef|default:"0" }}
+                                {{ operation.nbportef_ben_final|default:"0" }}
                             </span>
                         </td>
                     </tr>
@@ -496,7 +491,7 @@ label{
 
                 <div class="form-control form-control-solid">
 
-                    {{ operation.cours_operation }}
+                    {{ operation.cours_operation|intpoint }}
 
                 </div>
 
@@ -508,7 +503,7 @@ label{
 
                 <div class="form-control form-control-solid">
 
-                    {{ operation.brut|default:"0" }}
+                    {{ operation.brut|intpoint }}
 
                 </div>
 
@@ -518,10 +513,8 @@ label{
 
                 <label>Montant net</label>
 
-                <div class="form-control form-control-solid fw-bold text-primary">
-
-                    {{ operation.montant|default:"-" }}
-
+                <div class="form-control form-control-solid fw-bold">
+                     {{ operation.montant|intpoint }}
                 </div>
 
             </div>
@@ -611,32 +604,43 @@ label{
 
             </a>
 
+            {% if perms.mainapp.valider_operation %}
+
             <div class="d-flex gap-3">
 
                 {% if not operation.est_valide %}
 
-                <a href="#"
-                   class="btn btn-success">
+                    <form method="post"
+                          action="{% url 'mainapp:valider_operation' operation.public_id %}"
+                          onsubmit="return confirm('Confirmez-vous la validation de cet ordre ?');"
+                          style="display:inline;">
 
-                    <i class="bi bi-check-circle me-2"></i>
+                        {% csrf_token %}
 
-                    Valider
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle me-2"></i>
+                            Valider
+                        </button>
 
-                </a>
+                    </form>
 
                 {% endif %}
                 {% if operation.type_operation.libelle == "Achat de titres" or operation.type_operation.libelle == "Vente de titres" or operation.type_operation.libelle == "Transfert de titres" %}
 
-                    <a href="{% url 'mainapp:avis_transaction_achat_vente_pdf' operation.public_id %}">
+                    <a href="{% url 'mainapp:avis_transaction_achat_vente_pdf' operation.public_id %}" target="_blank">
                         <button class="btn btn-primary"><i class="bi bi-printer me-2"></i>Imprimer</button>
                     </a>
-                {% else %}
-                    <a href="#">
-                        <button class="btn btn-primary"><i class="bi bi-printer me-2"></i>Imprimer</button>
-                    </a>
+                {% comment %}
+                    {% else %}
+                        <a href="#">
+                            <button class="btn btn-primary"><i class="bi bi-printer me-2"></i>Imprimer</button>
+                        </a>
+                {% endcomment %}
                 {% endif %}
 
             </div>
+
+            {% endif %}
 
         </div>
 

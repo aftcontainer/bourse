@@ -831,15 +831,6 @@
                         <div class="col-md-6">
 
                             <div class="detail-label">
-                                Code ISIN
-                            </div>
-
-
-                        </div>
-
-                        <div class="col-md-6">
-
-                            <div class="detail-label">
                                 Type
                             </div>
 
@@ -981,7 +972,8 @@
 
                 </a>
 
-                <div class="d-flex gap-3 flex-wrap">
+                {% comment %}
+                    <div class="d-flex gap-3 flex-wrap">
 
                     <a href="{% url 'mainapp:liste_clients_titre' obj.public_id %}"
                        class="btn btn-light-primary">
@@ -1012,6 +1004,7 @@
                     </a>
 
                 </div>
+                {% endcomment %}
 
             </div>
 

@@ -191,10 +191,12 @@
 						<label class="fw-semibold fs-6 mb-2">{{ form.css.label }}</label>
 						<div class="input-group">{{ form.css }}<span class="suffix">FCFA</span></div>
 					</div>
-					<div class="col-md-4">
-						<label class="fw-semibold fs-6 mb-2">{{ form.ircm.label }}</label>
-						<div class="input-group">{{ form.ircm }}<span class="suffix">FCFA</span></div>
-					</div>
+					{% comment %}
+						<div class="col-md-4">
+							<label class="fw-semibold fs-6 mb-2">{{ form.ircm.label }}</label>
+							<div class="input-group">{{ form.ircm }}<span class="suffix">FCFA</span></div>
+						</div>
+					{% endcomment %}
 					<div class="col-md-4">
 						<label class="fw-semibold fs-6 mb-2">{{ form.montant.label }} <span class="lock"><i class="bi bi-lock-fill"></i></span></label>
 						<div class="input-group">{{ form.montant }}<span class="suffix">FCFA</span></div>

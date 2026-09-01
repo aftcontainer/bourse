@@ -198,14 +198,12 @@
     Attestation de titre
 </a>
 
-{% comment %}
-    <a href="{% url 'mainapp:historique_mouvements_pdf' obj.client.id obj.titre.id %}"
-       target="_blank"
-       class="btn btn-light">
-        <i class="bi bi-clock-history"></i>
-        Historique mouvements
-    </a>
-{% endcomment %}
+<a href="{% url 'mainapp:historique_mouvements_pdf' obj.client.id obj.titre.id %}"
+   target="_blank"
+   class="btn btn-light">
+    <i class="bi bi-clock-history"></i>
+    Historique
+</a>
 
 <a href="{% url 'mainapp:achat_titres' %}?portefeuille={{ obj.pk }}"
    class="btn btn-primary">

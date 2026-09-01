@@ -1,6 +1,7 @@
-from django.db import transaction
+from django.utils import timezone
+from django.db.models import Max
 
-from mainapp.models import IndexTitre, Portefeuille
+from mainapp.models import IndexTitre, Portefeuille, Operation, SequenceCertificat, SequenceOrdre
 
 from django.db import transaction
 
@@ -85,3 +86,19 @@ def repartir_plages(vendeur, acheteur, titre, nb_titres):
 
         if restant > 0:
             raise Exception("Le vendeur ne possède pas assez de titres.")
+
+def derniere_annee_op():
+    derniere_date = (
+        Operation.objects
+        .exclude(date_ordre__isnull=True)
+        .aggregate(Max('date_ordre'))['date_ordre__max']
+    )
+    return derniere_date.year if derniere_date else timezone.now().year
+
+def generer_numero_certificat():
+    numero = SequenceCertificat.prochain_numero()
+    return f"{numero:06d}"
+
+def generer_numero_ordre():
+    numero = SequenceOrdre.prochain_numero()
+    return f"{numero:06d}"

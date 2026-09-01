@@ -3,11 +3,14 @@ import os
 import json
 import io
 from io import BytesIO
+
+from django.db.models.functions import TruncMonth
+from django.utils import timezone
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.models import Permission
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Count
 from django.http import JsonResponse, HttpResponse, FileResponse
 import secrets
 
@@ -21,7 +24,7 @@ from django.views.decorators.http import require_POST
 from mainapp.forms import SignInForm, DeviseForm, QualiteForm, CategorieClientForm, TypeOperationForm, TypeTitreForm, \
     TitreForm, EtablissementForm, UserForm, ClientForm, RoleForm, VenteEtTransfertForm, PortefeuilleForm
 from .models import Devise, Qualite, CategorieClient, TypeOperation, TypeTitre, Titre, Etablissement, Client, User, \
-    Portefeuille, Role, JournalAudit, UserRole, Operation
+    Portefeuille, Role, JournalAudit, UserRole, Operation, IndexTitre
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, reverse, get_object_or_404
@@ -29,7 +32,7 @@ from django.contrib import messages
 
 from .services import GestionIndexTitre, nombre_en_lettres, formater_nombre, construire_pdf_registre_central, \
     generer_historique_mouvements_pdf, generer_certificat_actions_pdf, build_contexts_from_operation, generate_avis_pdf
-from .utils import is_ajax, get_error_message_from_form, save_with_audit
+from .utils import is_ajax, get_error_message_from_form, save_with_audit, derniere_annee_op
 
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
@@ -44,6 +47,7 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
+from collections import OrderedDict
 
 from django.apps import apps
 from django.contrib.contenttypes.models import ContentType
@@ -101,15 +105,69 @@ def home(request):
     nb_operations = Operation.objects.all().count()
     nb_clients = Client.objects.all().count()
     operations = Operation.objects.order_by("-id")[:5]
+    nb_etablissements = Etablissement.objects.all().count()
+    dernier_an_op = derniere_annee_op()
+
+    Operation.objects.all().update(est_valide=True)
+
     return render(
-        request, "home.html",
-        {
-            "nb_titres":nb_titres,
-            "nb_operations": nb_operations,
-            "nb_clients": nb_clients,
-            "operations": operations
-         }
+            request, "home.html",
+            {
+                "nb_titres":nb_titres,
+                "nb_operations": nb_operations,
+                "nb_clients": nb_clients,
+                "operations": operations,
+                "nb_etablissements": nb_etablissements,
+                "dernier_an_op": dernier_an_op
+            }
+        )
+
+
+def operations_par_mois(request):
+    annee_courante = derniere_annee_op()
+
+    MOIS_FR = [
+        'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
+    ]
+
+    stats = (
+        Operation.objects
+        .filter(date_ordre__year=annee_courante)
+        .annotate(mois=TruncMonth('date_ordre'))
+        .values('mois')
+        .annotate(
+            total=Count('id'),
+            nb_transfert=Count(
+                'id', filter=Q(type_operation__libelle='Transfert de titres')
+            ),
+            nb_vente=Count(
+                'id', filter=Q(type_operation__libelle='Vente de titres')
+            ),
+        )
+        .order_by('mois')
     )
+
+    resultats = OrderedDict()
+    for m in range(1, 13):
+        resultats[m] = {'total': 0, 'nb_transfert': 0, 'nb_vente': 0}
+
+    for s in stats:
+        resultats[s['mois'].month] = {
+            'total': s['total'],
+            'nb_transfert': s['nb_transfert'],
+            'nb_vente': s['nb_vente'],
+        }
+
+    data = {
+        'annee': annee_courante,
+        'labels': [MOIS_FR[m - 1] for m in resultats.keys()],
+        'totaux': [v['total'] for v in resultats.values()],
+        'transferts': [v['nb_transfert'] for v in resultats.values()],
+        'ventes': [v['nb_vente'] for v in resultats.values()],
+    }
+
+    return JsonResponse(data)
 
 @login_required(login_url="/connexion")
 def donnees(request):
@@ -123,7 +181,7 @@ def impressions(request):
 def parametres(request):
     return render(request,"parametres.html")
 
-#@permission_required('mainapp.view_devise')
+@permission_required('mainapp.view_devise')
 @login_required(login_url="/connexion")
 def liste_devises(request):
     devises = Devise.objects.all().order_by("libelle")
@@ -154,7 +212,7 @@ def liste_devises(request):
             return JsonResponse({"msg": msg, "status": "warning"})
     return render(request, "liste_devises.html", {"devises": devises})
 
-#@permission_required('mainapp.view_qualite')
+@permission_required('mainapp.view_qualite')
 @login_required(login_url="/connexion")
 def liste_qualites(request):
     qualites = Qualite.objects.all().order_by("libelle")
@@ -185,7 +243,7 @@ def liste_qualites(request):
             return JsonResponse({"msg": msg, "status": "warning"})
     return render(request, "liste_qualites.html", {"qualites": qualites})
 
-#@permission_required('mainapp.view_categorieclient')
+@permission_required('mainapp.view_categorieclient')
 @login_required(login_url="/connexion")
 def liste_categories_clients(request):
     cats = CategorieClient.objects.all().order_by("libelle")
@@ -216,7 +274,7 @@ def liste_categories_clients(request):
             return JsonResponse({"msg": msg, "status": "warning"})
     return render(request, "liste_cat_clients.html", {"cats": cats})
 
-#@permission_required('mainapp.view_typeoperation')
+@permission_required('mainapp.view_typeoperation')
 @login_required(login_url="/connexion")
 def liste_t_operations(request):
     t_operations = TypeOperation.objects.all().order_by("libelle")
@@ -230,7 +288,7 @@ def liste_t_operations(request):
                 return JsonResponse({"msg": "Suppression impossible (type d'opération utilisé ?)", "status": "error"})
     return render(request, "liste_types_operations.html", {"t_operations": t_operations})
 
-#@permission_required('mainapp.create_typeoperation')
+@permission_required('mainapp.add_typeoperation')
 @login_required(login_url="/connexion")
 def creer_t_operation(request):
     form = TypeOperationForm()
@@ -244,7 +302,7 @@ def creer_t_operation(request):
             return render(request,"creer_t_operation.html",{"form": form})
     return render(request,"creer_t_operation.html",{"form": form})
 
-#@permission_required('mainapp.change_typeoperation')
+@permission_required('mainapp.change_typeoperation')
 @login_required(login_url="/connexion")
 def editer_t_operation(request,public_id):
     obj = TypeOperation.objects.get(public_id=public_id)
@@ -259,13 +317,13 @@ def editer_t_operation(request,public_id):
             return render(request, "editer_t_operation.html", {"form": form,"obj": obj})
     return render(request, "editer_t_operation.html", {"form": form,"obj": obj})
 
-#@permission_required('mainapp.view_typeoperation')
+@permission_required('mainapp.view_typeoperation')
 @login_required(login_url="/connexion")
 def details_t_operation(request,public_id):
     obj = TypeOperation.objects.get(public_id=public_id)
     return render(request, "details_t_operation.html", {"obj": obj})
 
-#@permission_required('mainapp.view_typetitre')
+@permission_required('mainapp.view_typetitre')
 @login_required(login_url="/connexion")
 def liste_t_titres(request):
     t_titres = TypeTitre.objects.all().order_by('libelle')
@@ -296,13 +354,13 @@ def liste_t_titres(request):
             return JsonResponse({"msg": msg, "status": "warning"})
     return render(request, "liste_t_titres.html", {"t_titres": t_titres})
 
-#@permission_required('mainapp.view_titre')
+@permission_required('mainapp.view_titre')
 @login_required(login_url="/connexion")
 def liste_titres(request):
     titres = Titre.objects.all().order_by('libelle')
     return render(request,"liste_titres.html",{"titres": titres})
 
-#@permission_required('mainapp.create_titre')
+@permission_required('mainapp.add_titre')
 @login_required(login_url="/connexion")
 def creer_titre(request):
     form = TitreForm()
@@ -317,7 +375,7 @@ def creer_titre(request):
     else:
         return render(request, "creer_titre.html", {"form": form})
 
-#@permission_required('mainapp.change_devise')
+@permission_required('mainapp.change_devise')
 @login_required(login_url="/connexion")
 def editer_titre(request,public_id):
     obj = Titre.objects.get(public_id=public_id)
@@ -331,19 +389,19 @@ def editer_titre(request,public_id):
         return render(request, "editer_titre.html", {"form": form,"obj": obj})
     return render(request, "editer_titre.html", {"form": form, "obj": obj})
 
-#@permission_required('mainapp.view_titre',login_url="/connexion")
+@permission_required('mainapp.view_titre',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_titre(request,public_id):
     obj = Titre.objects.get(public_id=public_id)
     return render(request,"details_titre.html",{"obj": obj})
 
-#@permission_required('mainapp.view_etablissement',login_url="/connexion")
+@permission_required('mainapp.view_etablissement',login_url="/connexion")
 @login_required(login_url="/connexion")
 def liste_ets(request):
     ets = Etablissement.objects.all().order_by('libelle')
     return render(request,"liste_ets.html",{"ets": ets})
 
-#@permission_required('mainapp.create_etablissement',login_url="/connexion")
+@permission_required('mainapp.add_etablissement',login_url="/connexion")
 @login_required(login_url="/connexion")
 def creer_ets(request):
     form = EtablissementForm()
@@ -357,7 +415,7 @@ def creer_ets(request):
             return render(request, "creer_ets.html", {"form": form})
     return render(request, "creer_ets.html", {"form": form})
 
-#@permission_required('mainapp.change_etablissement',login_url="/connexion")
+@permission_required('mainapp.change_etablissement',login_url="/connexion")
 @login_required(login_url="/connexion")
 def editer_ets(request,public_id):
     obj = Etablissement.objects.get(public_id=public_id)
@@ -372,7 +430,7 @@ def editer_ets(request,public_id):
             return render(request, "editer_ets.html", {"form": form})
     return render(request, "editer_ets.html", {"form": form})
 
-#@permission_required('mainapp.view_etablissement',login_url="/connexion")
+@permission_required('mainapp.view_etablissement',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_ets(request,public_id):
     obj = Etablissement.objects.get(public_id=public_id)
@@ -382,13 +440,13 @@ def details_ets(request,public_id):
 def gestion_utilisateurs(request):
     return render(request,"gestion_users.html")
 
-#@permission_required('mainapp.view_user',login_url="/connexion")
+@permission_required('mainapp.view_user',login_url="/connexion")
 @login_required(login_url="/connexion")
 def liste_utilisateurs(request):
     users = User.objects.all().order_by('last_name')
     return render(request,"liste_users.html",{"users": users})
 
-#@permission_required('mainapp.create_user',login_url="/connexion")
+@permission_required('mainapp.add_user',login_url="/connexion")
 @login_required(login_url="/connexion")
 def creer_utilisateur(request):
     form = UserForm()
@@ -451,13 +509,13 @@ def activate(request, uidb64, token):
     else:
         return HttpResponse("Lien d'activation invalide.")
 
-#@permission_required('mainapp.view_client',login_url="/connexion")
+@permission_required('mainapp.view_client',login_url="/connexion")
 @login_required(login_url="/connexion")
 def liste_clients(request):
     titres = Titre.objects.all()
     return render(request,"liste_clients.html",{"titres": titres})
 
-#@permission_required('mainapp.view_client',login_url="/connexion")
+@permission_required('mainapp.view_client',login_url="/connexion")
 @login_required(login_url="/connexion")
 def clients_data(request):
     draw = int(request.GET.get("draw", 1))
@@ -727,7 +785,7 @@ def clients_titre_data(request):
         "data": data
     })
 
-#@permission_required('mainapp.view_client',login_url="/connexion")
+@permission_required('mainapp.view_client',login_url="/connexion")
 @login_required(login_url="/connexion")
 def creer_souscripteur(request):
     form = ClientForm()
@@ -743,7 +801,7 @@ def creer_souscripteur(request):
     else:
         return render(request, "creer_souscripteur.html", {"form": form})
 
-#@permission_required('mainapp.view_client',login_url="/connexion")
+@permission_required('mainapp.view_client',login_url="/connexion")
 @login_required(login_url="/connexion")
 def editer_souscripteur(request,public_id):
     obj = Client.objects.get(public_id=public_id)
@@ -758,19 +816,19 @@ def editer_souscripteur(request,public_id):
         return render(request, "editer_souscripteur.html", {"form": form})
     return render(request, "editer_souscripteur.html", {"form": form})
 
-#@permission_required('mainapp.view_client',login_url="/connexion")
+@permission_required('mainapp.view_client',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_souscripteur(request,public_id):
     obj = Client.objects.get(public_id=public_id)
     return render(request,"details_souscripteur.html",{"obj": obj,"form_portefeuille": PortefeuilleForm(),})
 
-#@permission_required('mainapp.view_portefeuille',login_url="/connexion")
+@permission_required('mainapp.view_portefeuille',login_url="/connexion")
 @login_required(login_url="/connexion")
 def liste_comptes(request):
     comptes = Portefeuille.objects.all()
     return render(request,"liste_comptes.html",{"comptes": comptes})
 
-#@permission_required('mainapp.view_portefeuille',login_url="/connexion")
+@permission_required('mainapp.view_portefeuille',login_url="/connexion")
 @login_required(login_url="/connexion")
 def comptes_data(request):
     draw = int(request.GET.get("draw", 1))
@@ -876,13 +934,13 @@ def comptes_data(request):
     })
 
 
-#@permission_required('mainapp.view_portefeuille',login_url="/connexion")
+@permission_required('mainapp.view_portefeuille',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_compte(request,public_id):
     obj = Portefeuille.objects.get(public_id=public_id)
     return render(request,"details_compte.html",{"obj": obj})
 
-#@permission_required('mainapp.view_role',login_url="/connexion")
+@permission_required('mainapp.view_role',login_url="/connexion")
 @login_required(login_url="/connexion")
 def liste_roles(request):
     roles = Role.objects.all().order_by("libelle")
@@ -895,7 +953,7 @@ def _build_permissions_by_model(selected_ids=None):
     app_models = apps.get_app_config('mainapp').get_models()
 
     permissions_by_model = []
-    extra_permissions = []  # permissions custom, toutes confondues
+    extra_permissions = []
 
     for model in app_models:
         ct = ContentType.objects.get_for_model(model)
@@ -915,7 +973,7 @@ def _build_permissions_by_model(selected_ids=None):
             'label': model._meta.verbose_name.capitalize(),
             'model_name': model._meta.model_name,
             'perms': perms_map,
-            'custom_perms': custom_perms,   # <-- nouveau
+            'custom_perms': custom_perms,
         })
 
         extra_permissions.extend(custom_perms)
@@ -942,7 +1000,7 @@ def _build_permissions_by_model(selected_ids=None):
 #     permissions_by_model.sort(key=lambda m: m['label'])
 #     return permissions_by_model
 
-#@permission_required('mainapp.create_role',login_url="/connexion")
+@permission_required('mainapp.add_role',login_url="/connexion")
 @login_required(login_url="/connexion")
 def creer_role(request):
     if request.method == 'POST':
@@ -969,7 +1027,7 @@ def creer_role(request):
     return render(request, 'creer_role.html', context)
 
 
-#@permission_required('mainapp.view_role',login_url="/connexion")
+@permission_required('mainapp.view_role',login_url="/connexion")
 @login_required(login_url="/connexion")
 def editer_role(request, public_id):
     role = get_object_or_404(Role, public_id=public_id)
@@ -980,6 +1038,8 @@ def editer_role(request, public_id):
             role = save_with_audit(form,request.user)
             permission_ids = request.POST.getlist('permissions')
             role.permissions.set(permission_ids)
+            role.is_active = True
+            role.save()
             messages.success(request, f"Le rôle « {role.libelle} » a été mis à jour.")
             return redirect('mainapp:liste_roles')
     else:
@@ -1044,15 +1104,13 @@ def journal_audit(request):
     }
     return render(request, 'journal_audit.html', context)
 
-#@permission_required('mainapp.change_role',login_url="/connexion")
+@permission_required('mainapp.change_role',login_url="/connexion")
 @login_required(login_url="/connexion")
 @login_required(login_url="/connexion")
 def attribuer_role(request):
     utilisateurs_qs = User.objects.all().order_by('last_name', 'first_name')
     roles_qs = Role.objects.filter(is_active=True).order_by('libelle')
 
-    # Pré-calcule les rôles de chaque utilisateur pour l'affichage
-    # (tableau récapitulatif + attribut data-roles du <select>)
     utilisateurs = []
     for u in utilisateurs_qs:
         role_ids = list(
@@ -1099,7 +1157,7 @@ def attribuer_role(request):
     }
     return render(request, 'attribuer_role.html', context)
 
-#@permission_required('mainapp.create_userrole',login_url="/connexion")
+@permission_required('mainapp.add_userrole',login_url="/connexion")
 @login_required(login_url="/connexion")
 def attribuer_user_role(request, public_id):
     # for role in Role.objects.all():
@@ -1138,7 +1196,7 @@ def attribuer_user_role(request, public_id):
     }
     return render(request, 'attribuer_user_role.html', context)
 
-#@permission_required('mainapp.view_user',login_url="/connexion")
+@permission_required('mainapp.view_user',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_utilisateur(request, public_id):
    utilisateur = get_object_or_404(User, public_id=public_id)
@@ -1146,31 +1204,20 @@ def details_utilisateur(request, public_id):
    role_ids = list(
        UserRole.objects.filter(user=utilisateur).values_list('role_id', flat=True)
    )
+
    roles_attribues = Role.objects.filter(id__in=role_ids).order_by('libelle')
-   from django.apps import apps
-   from django.contrib.contenttypes.models import ContentType
 
-   permission_ids = set(
-       Role.objects.filter(id__in=role_ids)
-       .values_list('permissions__id', flat=True)
-   )
+   permissions = []
+   for perm in utilisateur.get_all_permissions():
+       app_label, codename = perm.split(".", 1)
 
-   permissions_effectives = []
-   for model in apps.get_app_config('mainapp').get_models():
-       ct = ContentType.objects.get_for_model(model)
-       perms = {
-           p.codename.split('_')[0]: p.id in permission_ids
-           for p in Permission.objects.filter(content_type=ct)
-       }
-       if any(perms.values()):
-           permissions_effectives.append({
-               'label': model._meta.verbose_name.capitalize(),
-               'view': perms.get('view', False),
-               'add': perms.get('add', False),
-               'change': perms.get('change', False),
-               'delete': perms.get('delete', False),
-           })
-   permissions_effectives.sort(key=lambda m: m['label'])
+       permission = Permission.objects.get(
+           content_type__app_label=app_label,
+           codename=codename
+       )
+
+       permissions.append(permission)
+   permissions_effectives = len(permissions)
 
    historique_recent = (
        JournalAudit.objects.filter(user=utilisateur)
@@ -1185,7 +1232,7 @@ def details_utilisateur(request, public_id):
    }
    return render(request, 'details_utilisateur.html', context)
 
-#@permission_required('mainapp.change_user',login_url="/connexion")
+@permission_required('mainapp.change_user',login_url="/connexion")
 @login_required(login_url="/connexion")
 def editer_utilisateur(request,public_id):
     obj = User.objects.get(public_id=public_id)
@@ -1205,7 +1252,7 @@ def editer_utilisateur(request,public_id):
     else:
         return render(request,"editer_utilisateur.html",{"form": form})
 
-#@permission_required('mainapp.view_role',login_url="/connexion")
+@permission_required('mainapp.view_role',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_role(request, public_id):
     role = get_object_or_404(Role, public_id=public_id)
@@ -1241,7 +1288,7 @@ def details_role(request, public_id):
     }
     return render(request, 'details_role.html', context)
 
-#@permission_required('mainapp.change_role',login_url="/connexion")
+@permission_required('mainapp.change_role',login_url="/connexion")
 @login_required(login_url="/connexion")
 def modifier_role(request, public_id):
     role = get_object_or_404(Role, public_id=public_id)
@@ -1275,12 +1322,12 @@ def modifier_role(request, public_id):
     }
     return render(request, 'editer_role.html', context)
 
-#@permission_required('mainapp.view_operation',login_url="/connexion")
+@permission_required('mainapp.view_operation',login_url="/connexion")
 @login_required(login_url="/connexion")
 def liste_operations(request):
     return render(request,"liste_operations.html")
 
-#@permission_required('mainapp.view_operation',login_url="/connexion")
+@permission_required('mainapp.view_operation',login_url="/connexion")
 @login_required(login_url="/connexion")
 def operations_data(request):
 
@@ -1304,19 +1351,21 @@ def operations_data(request):
             Q(client__prenom_client__icontains=search) |
             Q(beneficiaire__nom_client__icontains=search) |
             Q(beneficiaire__prenom_client__icontains=search) |
-            Q(etablissement__libelle__icontains=search)
+            Q(etablissement__libelle__icontains=search) |
+            Q(etablissement__libelle__icontains=search) |
+            Q(type_operation__libelle__icontains=search)
         )
 
 
     records_filtered = qs.count()
 
-    # Nombre total avant recherche
     records_total = Operation.objects.count()
 
 
     data = []
 
     for op in qs[start:start + length]:
+
 
         # Client
         if op.client:
@@ -1337,6 +1386,11 @@ def operations_data(request):
         else:
             beneficiaire = "Non renseigné"
 
+        if op.type_operation:
+            type_operation = op.type_operation.libelle
+        else:
+            type_operation = "Non renseigné"
+
 
         # Etablissement
         if op.etablissement:
@@ -1346,10 +1400,13 @@ def operations_data(request):
 
 
         # Date
-        if op.created:
-            date_operation = op.created.strftime("%d/%m/%Y")
+        if op.date_ordre:
+            date_operation = op.date_ordre.strftime("%d/%m/%Y")
         else:
-            date_operation = ""
+            if op.created:
+                date_operation = op.created.strftime("%d/%m/%Y")
+            else:
+                date_operation = ""
 
 
         data.append([
@@ -1358,6 +1415,7 @@ def operations_data(request):
             etablissement,
             beneficiaire,
             op.nb_titre,
+            type_operation,
             date_operation,
             f"""
             <a href="/donnees/operations/{op.public_id}"
@@ -1383,7 +1441,7 @@ def operations_data(request):
         "data": data
     })
 
-#@permission_required('mainapp.create_operation',login_url="/connexion")
+@permission_required('mainapp.add_operation',login_url="/connexion")
 @login_required(login_url="/connexion")
 def effectuer_ordre(request):
     form = VenteEtTransfertForm()
@@ -1461,6 +1519,8 @@ def _verrouiller_champs(form):
     form.fields["client"].widget.attrs["class"] = "form-select"
 
 
+@permission_required('mainapp.add_operation',login_url="/connexion")
+@login_required(login_url="/connexion")
 def achat_titres(request):
 
     dict_num_ordre = Operation.objects.aggregate(num_ordre=Max("num_ordre"))
@@ -1469,8 +1529,6 @@ def achat_titres(request):
     type_op_achat = TypeOperation.objects.filter(libelle="Achat de titres").first()
     type_op_vente = TypeOperation.objects.filter(libelle="Vente de titres").first()
 
-    # Arrivée depuis la page détail du portefeuille (ou re-soumission POST
-    # d'un formulaire verrouillé -> on retrouve la source via le champ caché)
     portefeuille_id = request.GET.get("portefeuille") or request.POST.get("portefeuille_source")
 
     portefeuille_source = None
@@ -1481,7 +1539,6 @@ def achat_titres(request):
 
     verrouille = bool(portefeuille_source)
 
-    # Valeurs à figer si on est en mode verrouillé
     locked_initial = {}
     if verrouille:
         locked_initial = {
@@ -1492,8 +1549,6 @@ def achat_titres(request):
 
     if request.method == "POST":
 
-        # "initial" est indispensable ici : pour un champ disabled=True,
-        # Django ignore la valeur postée et relit celle-ci dans self.initial.
         form = VenteEtTransfertForm(request.POST, initial=locked_initial)
         form.instance.type_operation = type_op_achat
 
@@ -1602,6 +1657,9 @@ def achat_titres(request):
         },
     )
 
+
+@permission_required('mainapp.add_operation',login_url="/connexion")
+@login_required(login_url="/connexion")
 def transfert_titres(request):
 
     dict_num_ordre = Operation.objects.aggregate(num_ordre=Max("num_ordre"))
@@ -1728,14 +1786,17 @@ def transfert_titres(request):
         },
     )
 
-#@permission_required('mainapp.view_operation',login_url="/connexion")
+@permission_required('mainapp.view_operation',login_url="/connexion")
 @login_required(login_url="/connexion")
 def details_operation(request,public_id):
     operation = Operation.objects.get(public_id=public_id)
     return render(request,"details_operation.html",{"operation": operation})
 
+
+#@permission_required('mainapp.imprimer_doc',login_url="/connexion")
 @login_required(login_url="/connexion")
 def imprimer_attestation_titre(request, public_id):
+    from urllib.parse import quote
 
     compte = get_object_or_404(
         Portefeuille,
@@ -1760,14 +1821,13 @@ def imprimer_attestation_titre(request, public_id):
 
     pdf = HTML(string=html_string,base_url=request.build_absolute_uri("/")).write_pdf()
 
+    filename = f"attestation_titre_{compte.client.nom_client}_{compte.client.prenom_client}"
+
     response = HttpResponse(pdf,content_type="application/pdf")
 
-    response[
-        "Content-Disposition"
-    ] = (
-        'inline; filename="attestation_titre.pdf"'
+    response["Content-Disposition"] = (
+        f"inline; filename*=UTF-8''{quote(filename)}"
     )
-
     return response
 
 @login_required(login_url="/connexion")
@@ -2004,10 +2064,6 @@ def liste_actionnaires_pdf(request):
 
 @login_required(login_url="/connexion")
 def registre_central_pdf(request, public_id):
-    """
-    Vue Django prête à l'emploi.
-    URL exemple : path('registre-central/<int:titre_id>/', vue_pdf_registre_central)
-    """
     buffer = construire_pdf_registre_central(public_id)
     response = HttpResponse(buffer.getvalue(), content_type="application/pdf")
     response["Content-Disposition"] = 'inline; filename="registre_central_par_organisme.pdf"'
@@ -2021,7 +2077,7 @@ def historique_mouvements_pdf(request, client_id, titre_id):
     pdf_bytes = generer_historique_mouvements_pdf(client, titre)
 
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    nom_fichier = f"Historique_des_mouvements_{client.pk}.pdf"
+    nom_fichier = f"Historique_des_mouvements_{client.nom_client}_{client.prenom_client}.pdf"
     response["Content-Disposition"] = f'inline; filename="{nom_fichier}"'
     return response
 
@@ -2047,11 +2103,10 @@ def avis_transaction_achat_vente_pdf(request, public_id):
     buffer.seek(0)
 
     filename = f"avis_transaction_{operation.num_ordre}.pdf"
-    as_attachment = request.GET.get("inline") != "1"
 
     return FileResponse(
         buffer,
-        as_attachment=as_attachment,
+        as_attachment=False,
         filename=filename,
         content_type="application/pdf",
     )
@@ -2088,6 +2143,30 @@ def ajouter_portefeuille(request, public_id):
     return redirect(
         reverse("mainapp:details_souscripteur", kwargs={"public_id": client.public_id})
     )
+
+
+@permission_required('mainapp.valider_operation', raise_exception=True)
+@login_required(login_url="/connexion")
+def valider_operation(request, public_id):
+    operation = get_object_or_404(Operation, public_id=public_id)
+
+    if operation.est_valide:
+        messages.warning(request, "Cette opération est déjà validée.")
+        return redirect('mainapp:detail_operation', public_id=operation.public_id)
+
+    if request.method == 'POST':
+        operation.est_valide = True
+        operation.nom_modif = f"{request.user.first_name} {request.user.last_name}"
+        operation.date_modif = timezone.now().date()
+        operation.save()
+
+        messages.success(
+            request,
+            f"L'ordre N°{operation.num_ordre} a été validé avec succès."
+        )
+        return redirect('mainapp:detail_operation', public_id=operation.public_id)
+
+    return redirect('mainapp:detail_operation', public_id=operation.public_id)
 
 
 

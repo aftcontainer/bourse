@@ -1,3 +1,4 @@
+import datetime
 import os
 import smtplib
 import logging
@@ -18,6 +19,8 @@ from mainapp.models import Devise, Pays, TypePiece, TypeOperation, CategorieClie
 UserModel = get_user_model()
 logger = logging.getLogger("django.contrib.auth")
 from email.message import EmailMessage
+
+from decimal import Decimal, ROUND_HALF_UP
 
 err_msg = {
     "required": "Ce champ est obligatoire",
@@ -345,7 +348,7 @@ class VenteEtTransfertForm(forms.ModelForm):
         model = Operation
         fields = [
             "etablissement", "titre",
-            "client", "beneficiaire","date_ordre",
+            "client", "beneficiaire",
             "nbportef", "cours_operation", "nb_titre", "nbencours",
             "brut", "montant", "commission", "tax", "css", "ircm",
             "nbportefben","num_ordre","num_seq_ordre","code_op",
@@ -367,9 +370,9 @@ class VenteEtTransfertForm(forms.ModelForm):
 
             "brut": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
             "montant": forms.NumberInput(attrs={"class": CALC, "readonly": True}),
-            "commission": forms.NumberInput(attrs={"class": NUM}),
-            "tax": forms.NumberInput(attrs={"class": NUM}),
-            "css": forms.NumberInput(attrs={"class": NUM, "step": "0.01"}),
+            "commission": forms.NumberInput(attrs={"class": NUM,"readonly": True}),
+            "tax": forms.NumberInput(attrs={"class": NUM,"readonly": True}),
+            "css": forms.NumberInput(attrs={"class": NUM,"readonly": True, "step": "0.01","min": "0"}),
             "ircm": forms.NumberInput(attrs={"class": NUM}),
 
             "beneficiaire": forms.Select(attrs={"class": SELECT2, "data-control": "select2","data-placeholder": "Rechercher un beneficiaire..."}),
@@ -386,16 +389,15 @@ class VenteEtTransfertForm(forms.ModelForm):
             "titre": "Titre",
             "client": "Vendeur",
             "beneficiaire": "Beneficiaire",
-            "date_ordre": "Date de l'ordre",
             "nbportef": "Titres en portefeuille",
             "cours_operation": "Cours de cession",
-            "nb_titre": "Titres en transaction",
+            "nb_titre": "Nombre de titres en transaction",
             "nbencours": "Nombre total de titres",
             "tot_nbportebef": "Nombre total de titres",
             "brut": "Montant brut",
             "montant": "Débit compte client",
-            "commission": "Montant commission",
-            "tax": "Montant TVA",
+            "commission": "Montant commission (1%)",
+            "tax": "Montant TVA (18%)",
             "css": "Montant CSS",
             "ircm": "Montant IRCM",
             "nbportefben": "Titres en portefeuille (beneficiaire)",
@@ -407,6 +409,8 @@ class VenteEtTransfertForm(forms.ModelForm):
         self.fields["titre"].queryset = Titre.objects.all()
         self.fields["client"].queryset = Client.objects.none()
         self.fields["beneficiaire"].queryset = Client.objects.none()
+
+        self.initial['cours_operation'] = 10000
 
         titre_id = self._val("titre")
         etab_id = self._val("etablissement")
@@ -461,11 +465,11 @@ class VenteEtTransfertForm(forms.ModelForm):
             elif type_operation.libelle == 'Transfert de titres':
                 taux = self.get_taux_transfert()
             brut = cours * nb
-            commission = round(brut * taux["commission"])
-            tva = round(commission * taux["tva"])
-            ircm = round(commission * taux["ircm"])
-            css = round(commission * taux["css"], 2)
-            net = round(brut + commission + tva + ircm + css)
+            commission = (brut * taux["commission"]).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            tva = (commission * taux["tva"]).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            ircm = (commission * taux["ircm"]).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+            css = (commission * taux["css"]).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+            net = (brut + commission + tva + ircm + css).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
 
             cleaned["brut"] = brut
             cleaned["commission"] = commission
@@ -483,7 +487,7 @@ class VenteEtTransfertForm(forms.ModelForm):
             return defaut
 
         def frac(v):
-            return float(v) / 100 if v is not None else 0.0
+            return Decimal(v) / Decimal(100) if v is not None else Decimal("0.0")
 
         return {
             "commission": frac(op.commission),
@@ -498,7 +502,7 @@ class VenteEtTransfertForm(forms.ModelForm):
         if not op:
             return defaut
         def frac(v):
-            return float(v) / 100 if v is not None else 0.0
+            return Decimal(v) / Decimal(100) if v is not None else Decimal("0.0")
 
         return {
             "commission": frac(op.commission),

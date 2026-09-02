@@ -1144,23 +1144,33 @@ def build_contexts_from_operation(operation):
     css = float(operation.css or 0)
     commission_ttc = commission_ht + tva + css
 
-    ircm_montant = operation.ircm or 0
+    if operation.cours_operation > 10000:
+        plus_val = operation.cours_operation - 10000
+    else:
+        plus_val = 0
+
+    ircm_montant = operation.ircm*nb_actions or 0
 
     if (operation.sens or "").upper().startswith("VENTE"):
-        vendeur_client = operation.client
-        acheteur_client = operation.beneficiaire
-    else:
         vendeur_client = operation.beneficiaire
         acheteur_client = operation.client
-
-    montant_credit_vendeur = total - commission_ttc - ircm_montant
-    montant_debit_acheteur = total + commission_ttc
+    else:
+        vendeur_client = operation.client
+        acheteur_client = operation.beneficiaire
+    if operation.type_operation.libelle == "Transfert de titres":
+        montant_credit_vendeur = 0
+        montant_debit_acheteur = 0
+    else:
+        montant_credit_vendeur = total - commission_ttc - ircm_montant
+        montant_debit_acheteur = total + commission_ttc
 
     op_labelle_vend = "Vente de titres"
     op_labelle_ben = "Achat"
     if operation.type_operation.libelle == "Transfert de titres":
         op_labelle_vend = "Transfert de titres"
         op_labelle_ben = "Transfert de titres"
+
+
 
 
     vendeur_ctx = {
@@ -1181,8 +1191,8 @@ def build_contexts_from_operation(operation):
         "css": css,
         "commission_ttc": commission_ttc,
         "plus_value_pct": 0,
-        "plus_value_nb": nb_actions,
-        "plus_value_montant": 0,
+        "plus_value_nb": plus_val,
+        "plus_value_montant": plus_val*nb_actions,
         "ircm_pct": 20,
         "ircm_montant": ircm_montant,
         "montant_final": montant_credit_vendeur,

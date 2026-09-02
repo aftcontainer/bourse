@@ -4,8 +4,10 @@ import json
 import io
 from io import BytesIO
 
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
+from datetime import datetime
 from django.contrib.auth import authenticate, login,logout
 from django.contrib.auth.models import Permission
 from django.core.paginator import Paginator
@@ -142,7 +144,7 @@ def operations_par_mois(request):
                 'id', filter=Q(type_operation__libelle='Transfert de titres')
             ),
             nb_vente=Count(
-                'id', filter=Q(type_operation__libelle='Vente de titres')
+                'id', filter=Q(Q(type_operation__libelle='Vente de titres') | Q(type_operation__libelle='Achat de titres'))
             ),
         )
         .order_by('mois')
@@ -1604,6 +1606,7 @@ def achat_titres(request):
                     op.num_ordre = num_ordre
                     op.code_op = type_op_vente.old_id
                     op.code_op_ben = type_op_achat.old_id
+                    op.date_ordre = date.today()
 
                     op.save()
 
@@ -1617,6 +1620,7 @@ def achat_titres(request):
                 messages.error(request, str(e))
 
         else:
+            print(form.errors)
             messages.error(request, "Veuillez corriger les erreurs du formulaire.")
 
     else:
@@ -1653,7 +1657,7 @@ def achat_titres(request):
             "form": form,
             "verrouille": verrouille,
             "portefeuille_source": portefeuille_source,
-            "taux_json": json.dumps(form.get_taux_vente()),
+            "taux_json": json.dumps(form.get_taux_vente(), cls=DjangoJSONEncoder),
         },
     )
 
@@ -1667,8 +1671,6 @@ def transfert_titres(request):
 
     type_op = TypeOperation.objects.filter(libelle='Transfert de titres').first()
 
-    # Arrivée depuis la page détail du portefeuille (ou re-soumission POST
-    # d'un formulaire verrouillé -> on retrouve la source via le champ caché)
     portefeuille_id = request.GET.get("portefeuille") or request.POST.get("portefeuille_source")
 
     portefeuille_source = None
@@ -1743,6 +1745,7 @@ def transfert_titres(request):
                     op.num_ordre = num_ordre
                     op.code_op = type_op.old_id
                     op.code_op_ben = type_op.old_id
+                    op.date_ordre = date.today()
 
                     op.save()
 
@@ -1782,7 +1785,7 @@ def transfert_titres(request):
             "form": form,
             "verrouille": verrouille,
             "portefeuille_source": portefeuille_source,
-            "taux_json": json.dumps(form.get_taux_transfert()),
+            "taux_json": json.dumps(form.get_taux_vente(), cls=DjangoJSONEncoder),
         },
     )
 
@@ -2008,18 +2011,29 @@ def liste_actionnaires_pdf(request):
                 preserveAspectRatio=True, mask="auto",
             )
 
-    # Titre, date et valeur : tous centrés sur la même largeur de page
+    def dessiner_pied_page(canvas_obj, doc_obj):
+        canvas_obj.saveState()
+        canvas_obj.setFont("Helvetica", 8)
+        page_num = canvas_obj.getPageNumber()
+        texte = f"Page {page_num}"
+        canvas_obj.drawCentredString(
+            doc_obj.pagesize[0] / 2, 1 * cm, texte
+        )
+        canvas_obj.restoreState()
+
+    def dessiner_page_complete(canvas_obj, doc_obj):
+        dessiner_logo(canvas_obj, doc_obj)
+        dessiner_pied_page(canvas_obj, doc_obj)
+
     story.append(Paragraph("LISTE DES ACTIONNAIRES", title_style))
     story.append(Spacer(1, 0.4 * cm))
 
-    from datetime import datetime
     date_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     story.append(Paragraph(f"EN DATE DU :&nbsp;&nbsp;&nbsp;{date_str}", label_style))
     story.append(Spacer(1, 0.2 * cm))
     story.append(Paragraph(f"VALEUR :&nbsp;&nbsp;<b>{nom_titre.upper()}</b>", label_style))
     story.append(Spacer(1, 0.5 * cm))
 
-    # Tableau
     entetes = ["Ordre", "Qualité", "Noms ou Raison sociale", "Prénoms", "Nb Actions"]
     table_data = [entetes]
 
@@ -2035,7 +2049,6 @@ def liste_actionnaires_pdf(request):
             formater_nombre(nb),
         ])
 
-    # Ligne de total (comme dans le modèle : "TOTAL : 5 398 977")
     table_data.append(["", "", "", "TOTAL :", formater_nombre(total_actions)])
 
     col_widths = [1.5 * cm, 2.8 * cm, 6.5 * cm, 5 * cm, 2.7 * cm]
@@ -2054,12 +2067,17 @@ def liste_actionnaires_pdf(request):
     ]))
     story.append(table)
 
-    doc.build(story, onFirstPage=dessiner_logo, onLaterPages=dessiner_logo)
+    doc.title = f"Liste des actionnaires de {nom_titre}"
+    doc.author = "AFG Bank"
+    doc.subject = "Liste des actionnaires de {nom_titre}"
+
+    #doc.build(story, onFirstPage=dessiner_logo, onLaterPages=dessiner_logo)
+    doc.build(story, onFirstPage=dessiner_page_complete, onLaterPages=dessiner_page_complete)
     pdf_bytes = buffer.getvalue()
     buffer.close()
 
     response = HttpResponse(pdf_bytes, content_type="application/pdf")
-    response["Content-Disposition"] = 'attachment; filename="liste_actionnaires.pdf"'
+    response["Content-Disposition"] = 'inline; filename="liste_actionnaires.pdf"'
     return response
 
 @login_required(login_url="/connexion")

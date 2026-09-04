@@ -6,7 +6,7 @@ import logging
 from django import forms
 from django.template import loader
 from django.contrib.auth import get_user_model, password_validation
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm, PasswordChangeForm
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.encoding import force_bytes
@@ -612,5 +612,32 @@ class SetPasswordForm(SetPasswordForm):
         widget=forms.PasswordInput(attrs={"autocomplete": "Nouveau mot de passe", "class": "form-control"}),
     )
 
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="Mot de passe actuel",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-solid',
+            'autocomplete': 'current-password',
+            'autofocus': True,
+        }),
+    )
+    new_password1 = forms.CharField(
+        label="Nouveau mot de passe",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-solid',
+            'autocomplete': 'new-password',
+        }),
+        help_text="8 caractères minimum, ni trop simple, ni entièrement numérique.",
+    )
+    new_password2 = forms.CharField(
+        label="Confirmer le nouveau mot de passe",
+        strip=False,
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control form-control-solid',
+            'autocomplete': 'new-password',
+        }),
+    )
 
 

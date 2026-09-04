@@ -263,7 +263,18 @@
                                 {% else %}
                                     <td class="text-end fw-bold">Non définie</td>
                                 {% endif %}
-                                <td class="text-end fw-bold">{{ op.type_operation.libelle }}</td>
+                                <td class="text-end fw-bold">
+                                    {% if op.type_operation.libelle == 'Achat de titres' or op.type_operation.libelle == 'Vente de titres' %}
+                                        Vente de titres
+                                    {% elif op.type_operation.libelle == 'Transfert de titres' %}
+                                        Transfert de titres
+                                    {% elif op.type_operation.libelle == 'Souscription augmentation de capital' %}
+                                        	Souscription augmentation de capital
+                                    {% elif op.type_operation.libelle == '	Report des Actions' %}
+                                        Report des Actions
+                                    {% endif %}
+
+                                </td>
                                 <td class="text-end">
                                     {% if op.est_valide %}
                                         <span class="badge badge-light-success">Validée</span>

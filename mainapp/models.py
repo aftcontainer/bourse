@@ -355,8 +355,8 @@ class Operation(AbstractModel):
         ]
 
     def save(self, *args, **kwargs):
-        if self.cours_operation and self.cours_operation > 10000:
-            self.ircm = round((self.cours_operation - 10000) * 0.20)
+        if self.cours_operation and self.cours_operation > self.titre.nominal:
+            self.ircm = round((self.cours_operation - self.titre.nominal) * 0.20)
         else:
             self.ircm = 0
         super().save(*args, **kwargs)

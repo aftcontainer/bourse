@@ -640,7 +640,7 @@ def generer_historique_mouvements_pdf(client, titre):
     telephone = getattr(client, "telephone", "") or ""
 
     info_data = [
-        [Paragraph(f"Identifiant : <b>{client.indentifiant}</b>", style_normal), ""],
+        [Paragraph(f"Identifiant : <b>{client.indentifiant or '-'}</b>", style_normal), ""],
         [Paragraph(f"Nom du titulaire : <b>{nom_complet.upper()}</b>", style_normal), ""],
         [Paragraph(f"Adresse : {adresse}", style_normal),
          Paragraph(f"Tél. : {telephone}", style_normal)],
@@ -1144,8 +1144,8 @@ def build_contexts_from_operation(operation):
     css = float(operation.css or 0)
     commission_ttc = commission_ht + tva + css
 
-    if operation.cours_operation > 10000:
-        plus_val = operation.cours_operation - 10000
+    if operation.cours_operation > operation.titre.nominal:
+        plus_val = operation.cours_operation - operation.titre.nominal
     else:
         plus_val = 0
 

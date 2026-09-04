@@ -84,5 +84,7 @@ urlpatterns = [
     path("souscripteurs/<str:public_id>/portefeuilles/ajouter/",views.ajouter_portefeuille,name="ajouter_portefeuille"),
     path("utilisateurs/<str:public_id>/toggle-actif/",views.toggle_utilisateur_actif,name="toggle_utilisateur_actif"),
     path('operations/<uuid:public_id>/valider/', views.valider_operation, name='valider_operation'),
+    path('profil/', views.profil, name='profil'),
+    path('profil/changer-mot-de-passe/', views.changer_mot_de_passe, name='changer_mot_de_passe'),
 
 ]

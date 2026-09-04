@@ -4,11 +4,12 @@ import json
 import io
 from io import BytesIO
 
+from django.contrib.auth.forms import PasswordChangeForm
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from datetime import datetime
-from django.contrib.auth import authenticate, login,logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.models import Permission
 from django.core.paginator import Paginator
 from django.db import transaction
@@ -24,7 +25,8 @@ from datetime import date
 from django.views.decorators.http import require_POST
 
 from mainapp.forms import SignInForm, DeviseForm, QualiteForm, CategorieClientForm, TypeOperationForm, TypeTitreForm, \
-    TitreForm, EtablissementForm, UserForm, ClientForm, RoleForm, VenteEtTransfertForm, PortefeuilleForm
+    TitreForm, EtablissementForm, UserForm, ClientForm, RoleForm, VenteEtTransfertForm, PortefeuilleForm, \
+    CustomPasswordChangeForm
 from .models import Devise, Qualite, CategorieClient, TypeOperation, TypeTitre, Titre, Etablissement, Client, User, \
     Portefeuille, Role, JournalAudit, UserRole, Operation, IndexTitre
 
@@ -1251,6 +1253,8 @@ def editer_utilisateur(request,public_id):
         else:
             msg = get_error_message_from_form(form)
             messages.error(request, msg)
+            print(form.errors)
+            return render(request, "editer_utilisateur.html", {"form": form})
     else:
         return render(request,"editer_utilisateur.html",{"form": form})
 
@@ -1480,6 +1484,7 @@ def clients_par_titre(request):
                 "id": p.client_id,
                 "text": str(p.client),
                 "nb_titre": p.nb_titre,
+                "compte": p.client.num_compte
             })
     return JsonResponse({"results": results})
 
@@ -2185,6 +2190,71 @@ def valider_operation(request, public_id):
         return redirect('mainapp:detail_operation', public_id=operation.public_id)
 
     return redirect('mainapp:detail_operation', public_id=operation.public_id)
+
+@login_required
+def profil(request):
+    user = request.user
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        photo = request.FILES.get('photo')
+        photo_remove = request.POST.get('photo_remove')
+
+        # Vérifs d'unicité (hors utilisateur courant)
+        from .models import User
+        if User.objects.exclude(pk=user.pk).filter(username=username).exists():
+            messages.error(request, "Ce nom d'utilisateur est déjà utilisé.")
+            return redirect('mainapp:profil')
+
+        if User.objects.exclude(pk=user.pk).filter(email=email).exists():
+            messages.error(request, "Cette adresse email est déjà utilisée.")
+            return redirect('mainapp:profil')
+
+        user.first_name = first_name
+        user.last_name = last_name
+        user.username = username
+        user.email = email
+
+        if photo_remove:
+            user.photo.delete(save=False)
+            user.photo = None
+        elif photo:
+            user.photo = photo
+
+        user.save()
+        messages.success(request, "Votre profil a été mis à jour avec succès.")
+        return redirect('mainapp:profil')
+
+    context = {
+        'user': user,
+        'password_form': CustomPasswordChangeForm(user=user),
+    }
+
+    return render(request, 'profil.html', context)
+
+
+@login_required
+def changer_mot_de_passe(request):
+    user = request.user
+    if request.method == 'POST':
+        form = PasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # évite la déconnexion
+            messages.success(request, "Votre mot de passe a été mis à jour.")
+        else:
+            for error in form.errors.values():
+                messages.error(request, error.as_text())
+        return redirect('mainapp:profil')
+
+    context = {
+        'user': user,
+        'password_form': CustomPasswordChangeForm(user=user),
+    }
+    return render(request, 'profil.html', context)
 
 
 

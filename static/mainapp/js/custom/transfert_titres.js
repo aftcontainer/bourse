@@ -193,7 +193,12 @@
     else clientSelect.addEventListener("change", majNbPortef);
 
     if (nbInput) {
-      nbInput.addEventListener("input", function () { calcNbencours(); calcBrut(); });
+      nbInput.addEventListener("input", function () {
+        calcNbencours(); calcBrut();
+        if (nbportefbenInput && nbportefbenInput.value !== "") {
+            calcTotNbporte();
+        }
+      });
     }
 
     if (coursInput) {

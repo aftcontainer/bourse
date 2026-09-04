@@ -3,15 +3,34 @@
 {% load thousands_separator %}
 
 {% block title %}
-Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
+    {% if operation.type_operation %}
+        {% if operation.type_operation.libelle == 'Vente de titres' or operation.type_operation.libelle == 'Achat de titres' %}
+            Vente de titre
+        {% elif operation.type_operation.libelle == 'Transfert de titres' %}
+            Transfert de titre
+        {% endif %}
+    {% else %}ordre{% endif %}
 {% endblock %}
 
 {% block titre_page %}
-Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
+    {% if operation.type_operation %}
+        {% if operation.type_operation.libelle == 'Vente de titres' or operation.type_operation.libelle == 'Achat de titres' %}
+            Vente de titre
+        {% elif operation.type_operation.libelle == 'Transfert de titres' %}
+            Transfert de titre
+        {% endif %}
+    {% else %}ordre{% endif %}
 {% endblock %}
 
 {% block breadcrumb_active %}
-Détail {% if operation.type_operation %}{{ operation.type_operation.libelle }}{% else %}ordre{% endif %}
+Détail
+{% if operation.type_operation %}
+    {% if operation.type_operation.libelle == 'Vente de titres' or operation.type_operation.libelle == 'Achat de titres' %}
+        Vente de titre
+    {% elif operation.type_operation.libelle == 'Transfert de titres' %}
+        Transfert de titre
+    {% endif %}
+{% else %}ordre{% endif %}
 {% endblock %}
 
 {% block extra_css %}
@@ -152,10 +171,12 @@ label{
                 <div class="sub">
 
                     {% if operation.type_operation %}
-                        {{ operation.type_operation.libelle }}
-                    {% else %}
-                        Vente de titres
-                    {% endif %}
+                        {% if operation.type_operation.libelle == 'Vente de titres' or operation.type_operation.libelle == 'Achat de titres' %}
+                            Vente de titre
+                        {% elif operation.type_operation.libelle == 'Transfert de titres' %}
+                            Transfert de titre
+                        {% endif %}
+                    {% else %}ordre{% endif %}
 
                     •
                     {% if operation.date_ordre %}
